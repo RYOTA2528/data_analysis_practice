@@ -1,0 +1,219 @@
+/*
+【BigLakeの特徴】
+データ ウェアハウスとデータレイクのデータアクセスを簡素化する統合ストレージ エンジンです。マルチクラウド ストレージとオープン フォーマット全体に対し、一貫した詳細なアクセス制御を行えます。
+
+BigLake により、BigQuery の行レベル、および列レベルのきめ細かいセキュリティが、データが所在するオブジェクト ストア（Amazon S3、Azure Data Lake Storage Gen2、Google Cloud Storage など）のテーブルにも適用されます。アクセス権の委任を介して、テーブルへのアクセスが基盤となるクラウド ストレージ データから切り離されます。この機能を利用することで、組織内のユーザーやパイプラインに対して、テーブル全体へのアクセス権を与えるのではなく、行および列レベルのアクセス権を安全に付与できます。
+
+BigQuery では行および列レベルでのアクセス制御が適用されており、各ユーザーは自身にアクセス権があるデータのみを見ることができるようになっています。
+*/
+
+
+
+/*
+【ハンズオンの内容】
+ BigLakeを使って さまざまな外部データソースに接続します 接続リソースを作成して Cloud Storageデータレイクへの アクセス権を設定します BigLakeテーブルを作成してクエリを実行し アクセス制御ポリシーを設定します 最後に 既存の外部テーブルを BigLakeテーブルにアップグレードします。
+*/
+
+
+/*
+【ハンズオンの流れ】
+・接続リソースを作成して表示する。
+・Cloud Storage データレイクへのアクセス権を設定する。
+・BigLake テーブルを作成する。
+・BigQuery を介して BigLake テーブルにクエリを実行する。
+・アクセス制御ポリシーを設定する。
+・外部テーブルを BigLake テーブルにアップグレードする。
+*/
+
+
+/*
+【作業内容】
+・gcloud で以下command実施
+　・gcloud auth list　：効なアカウント名を一覧表示
+　・gcloud config list project　：プロジェクト ID を一覧表示
+（タスク 1）. 接続リソースを作成する
+※BigLake テーブルは接続リソースを使って Google Cloud Storage にアクセスします。接続リソースはプロジェクト内の 1 つの特定のテーブル、または任意の複数のテーブルに関連付けることができます。
+→[接続タイプ] リストで、[Vertex AI リモートモデル、リモート関数、BigLake（Cloud リソース）] を選択します。
+
+（タスク２）.Cloud Storage データレイクへのアクセス権を設定する
+※新しい接続リソースに Cloud Storage データレイクへの読み取り専用アクセス権を付与します。これにより、BigQuery がユーザーに代わって Cloud Storage ファイルにアクセスできるようになります。
+接続リソース サービス アカウントに Storage オブジェクト閲覧者の IAM ロールを付与することをおすすめします。これにより、サービス アカウントが Cloud Storage バケットにアクセスできるようになります。
+　1.ナビゲーション メニューから、[IAM と管理] > [IAM] にアクセスします。
+
+　2.[+ アクセス権を付与] をクリックします。
+
+　3.[新しいプリンシパル] フィールドに、前の手順でコピーしたサービス アカウント ID を入力します。
+
+　4.[ロールを選択] フィールドで、[Cloud Storage]、[Storage オブジェクト閲覧者] の順に選択します。
+
+
+（タスク 3）. BigLake テーブルを作成する
+※ CSV ファイル形式を使用していますが、制限事項に記載されているとおり、BigLake でサポートされているものであればどの形式でも使用可能です。
+　①データセットを作成する
+　②テーブルを作成する
+　　・[ソース] の [テーブルの作成元] で、[Google Cloud Storage] を選択します
+　　・[テーブルタイプ] を [外部テーブル] に変更します。
+　　・[Cloud リソース接続を使用して BigLake テーブルを作成する] チェックボックスをオンにします。
+　　[スキーマ] で [テキストとして編集] を有効にし、次のスキーマをコピーしてテキスト ボックスに貼り付けます。・
+　　[
+{
+    "name": "customer_id",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "first_name",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "last_name",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "company",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "address",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "city",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "state",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "country",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "postal_code",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "phone",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "fax",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "email",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "support_rep_id",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+  }
+]
+　③[テーブルを作成] をクリックします。
+
+（タスク 4）. BigQuery を介して BigLake テーブルにクエリを実行する
+　①以下クエリを実行しテーブルの確認
+・SELECT * FROM `Project ID.demo_dataset.biglake_table`
+
+（タスク 5）. アクセス制御ポリシーを設定する
+※BigLake テーブルのアクセス制御ポリシーを作成するには、まず BigQuery でポリシータグの分類体系を設定します。次に、そのポリシータグを機密性の高い行または列に適用します
+　①ポリシータグを列に追加する
+　・[demo-dataset] > [biglake_table] に移動し、テーブルをクリックしてテーブルのスキーマページを開きます。
+　・「編集」 をクリックします。
+　・［address]、[postal_code]、[phone] の隣にあるチェックボックスをオンにします。
+　・[ポリシータグを追加] をクリックします。
+　・[taxonomy name] をクリックして開き、[biglake-policy.] を選択します。
+　・注: 列に付いている警告マークは、セキュリティ ポリシーによりそれら特定のフィールドにはアクセスできないことを示しています。
+　・列レベルのセキュリティを確認する
+　・先ほどと同様のクエリを投げるとアクセス拒否エラーがでるようになる
+　・今度は次のクエリ（アクセス権のない列を除外しているもの）を実行します。
+　（SELECT *  EXCEPT(address, phone, postal_code)
+FROM `Project ID.demo_dataset.biglake_table`）
+　・今回のクエリは問題なく実行され、アクセス権のある列が返されるはずです。この例は、BigQuery を介して適用される列レベルのセキュリティを、BigLake テーブルにも適用できることを示しています。
+
+（タスク 6）. 外部テーブルを BigLake テーブルにアップグレードする
+※既存のテーブルをクラウド リソース接続に関連付けることによって、既存のテーブルを BigLake テーブルにアップグレードできます。
+　①外部テーブルを作成する
+　・[ソース] の [テーブルの作成元] で、[Google Cloud Storage] を選択
+　・[参照] をクリックしてデータセットを選択します。[Project ID] という名前のバケットに移動し、その中の invoice.csv ファイルを BigQuery にインポート
+　・[送信先] で、正しいラボ プロジェクトを選択していて、demo_dataset を使用していることを確認
+　・[テーブルタイプ] を [外部テーブル] に変更します。
+　・[スキーマ] で [テキストとして編集] を有効し以下を転記
+　[
+{
+    "name": "invoice_id",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "customer_id",
+    "type": "INTEGER",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "invoice_date",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "billing_address",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "billing_city",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "billing_state",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "billing_country",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "billing_postal_code",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "total",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  }
+]
+　②外部テーブルを BigLake テーブルに更新する
+　・export PROJECT_ID=$(gcloud config get-value project)
+bq mkdef \
+--autodetect \
+--connection_id=$PROJECT_ID.US.my-connection \
+--source_format=CSV \
+"gs://$PROJECT_ID/invoice.csv" > /tmp/tabledef.json
+　・テーブル定義が作成されていることを確認します。
+　・（cat /tmp/tabledef.json）
+　・テーブルからスキーマを取得します。
+　（bq show --schema --format=prettyjson  demo_dataset.external_table > /tmp/schema）
+　・新しい外部テーブルの定義を使用してテーブルを更新します。
+　（bq update --external_table_definition=/tmp/tabledef.json --schema=/tmp/schema demo_dataset.external_table）
+　
+　③更新したテーブルを確認する
+　→BigQueryの作成したテーブル(external_table)をダブルクリックし、詳細を確認
+　・[外部データ構成] で、テーブルが正しい接続 ID を使用していることを確認
+　・これで、既存の外部テーブルをクラウド リソース接続に関連付けることにより、BigLake テーブルにアップグレード
