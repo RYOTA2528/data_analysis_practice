@@ -1,0 +1,92 @@
+/*
+【DataStreamの特徴】
+：AlloyDB、MySQL、PostgreSQL、Oracle などの運用データベース ソースから
+ Google Cloud のサーバーレス データ ウェアハウスである BigQuery に、直接シームレスにデータをレプリケート（複製）できるという特長があります。
+ つまり、サーバーレスで自動スケーリングが可能なアーキテクチャを持つ Datastream を使うことで、低レイテンシでデータをレプリケートするための ELT（抽出、読み込み、変換）パイプラインを簡単に設定し、リアルタイムで分析や洞察を得ることができます
+*/
+
+
+/*
+【ハンズオンの内容】
+Cloud SQL for PostgreSQL データベースをデプロイし、gcloud コマンドラインを使用してサンプルのデータセットをインポートします。UI を使って Datastream ストリームを作成および開始し、データを BigQuery にレプリケートします。
+*/
+
+
+/*
+【ハンズオンの流れ】
+・Google Cloud コンソールを使って Cloud SQL for PostgreSQL インスタンスを準備する
+・データを Cloud SQL インスタンスにインポートする
+・PostgreSQL データベース用の Datastream 接続プロファイルを作成する
+・BigQuery を複製先とする Datastream 接続プロファイルを作成する
+・Datastream ストリームを作成してレプリケーションを開始する
+・既存のデータと変更内容が BigQuery に正しくレプリケートされているかどうかを検証する
+*/
+
+/*
+【作業内容】
+・gcloud で以下command実施
+　・gcloud auth list　：有効なアカウント名を一覧表示
+　・gcloud config list project　：プロジェクト ID を一覧表示
+
+（タスク１）レプリケーション用のデータベースを作成する
+→Datastream によるレプリケーションのために Cloud SQL for PostgreSQL データベースを準備
+　①gcloud services enable sqladmin.googleapis.com　：Cloud SQL API を有効化
+　② POSTGRES_INSTANCE=postgres-db
+DATASTREAM_IPS=34.72.28.29,34.67.234.134,34.67.6.157,34.72.239.218,34.71.242.81
+gcloud sql instances create ${POSTGRES_INSTANCE} \
+    --database-version=POSTGRES_14 \
+    --cpu=2 --memory=10GB \
+    --authorized-networks=${DATASTREAM_IPS} \
+    --region=us-central1 \
+    --root-password pwd \
+    --database-flags=cloudsql.logical_decoding=on
+　　：Cloud SQL for PostgreSQL データベース インスタンスを作成
+　　
+　③gcloud sql connect postgres-db --user=postgres　：PostgreSQL データベースに接続
+　④サンプルのスキーマとテーブルを作成：
+　CREATE SCHEMA IF NOT EXISTS test;
+CREATE TABLE IF NOT EXISTS test.example_table (
+id  SERIAL PRIMARY KEY,
+text_col VARCHAR(50),
+int_col INT,
+date_col TIMESTAMP
+);
+
+ALTER TABLE test.example_table REPLICA IDENTITY DEFAULT; 
+
+INSERT INTO test.example_table (text_col, int_col, date_col) VALUES
+('hello', 0, '2020-01-01 00:00:00'),
+('goodbye', 1, NULL),
+('name', -987, NOW()),
+('other', 2786, '2021-01-01 00:00:00');
+
+　⑤レプリケーション用のデータベースを構成する：
+　CREATE PUBLICATION test_publication FOR ALL TABLES;
+ALTER USER POSTGRES WITH REPLICATION;
+SELECT PG_CREATE_LOGICAL_REPLICATION_SLOT('test_replication', 'pgoutput');
+
+（タスク 2）. Datastream リソースを作成してレプリケーションを開始する
+
+
+（タスク 3）. BigQuery のデータを表示する
+
+（タスク 4）. 複製元の変更内容が BigQuery にレプリケートされていることを確認する
+　　①Cloud Shell で次のコマンドを実行し、Cloud SQL データベースに接続
+　　gcloud sql connect postgres-db --user=postgres
+　　②データの変更
+　　INSERT INTO test.example_table (text_col, int_col, date_col) VALUES
+('abc', 0, '2022-10-01 00:00:00'),
+('def', 1, NULL),
+('ghi', -987, NOW());
+
+UPDATE test.example_table SET int_col=int_col*2; 
+
+DELETE FROM test.example_table WHERE text_col = 'abc';
+　　③BigQuery側で変更が同期されてるかの確認
+　　SELECT * FROM test.example_table ORDER BY id;
+
+
+*/
+
+
+
