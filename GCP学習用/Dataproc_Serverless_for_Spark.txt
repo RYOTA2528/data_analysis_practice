@@ -1,0 +1,81 @@
+/*
+【Dataproc Serverless for Sparkの特徴】
+Dataproc Serverless は、インフラストラクチャの管理やワークロードの手動調整を必要とせずに、オープンソースのデータ処理および分析ワークロードを実行しやすくするフルマネージド サービスです。
+
+Dataproc Serverless for Spark は、既存の Spark ワークロードを Google Cloud に簡単に移行するための最適化された環境を提供します。
+*/
+
+
+/*
+【ハンズオンの内容】
+Dataproc Serverless 環境でバッチ ワークロードを実行します。このワークロードは、Spark テンプレートを使用して Avro ファイルを処理し、BigQuery テーブルを作成して読み込みます。
+*/
+
+
+/*
+【ハンズオンの流れ】
+・環境を構成する
+・ラボのアセットをダウンロードする
+・Spark コードを構成し、実行する
+B・igQuery でデータを確認する
+*/
+
+
+/*
+【作業内容】
+・gcloud で以下command実施
+　・gcloud auth list　：効なアカウント名を一覧表示
+　・gcloud config list project　：プロジェクト ID を一覧表示
+　
+
+（タスク 1）. 環境構成のタスクを実施する
+　①.Cloud Shell で次のコマンドを実行して、プライベート IP アクセスを有効にします。
+　　gcloud compute networks subnets update default --region=REGION --enable-private-ip-google-access
+　②新しい Cloud Storage バケットをステージング ロケーションとして作成
+　　gsutil mb -p  PROJECT_ID gs://PROJECT_ID
+　③BigQuery がテーブルの作成と読み込みの際に一時的なロケーションとして使用する、新しい Cloud Storage バケットを作成
+　　gsutil mb -p  PROJECT_ID gs://PROJECT_ID-bqtemp
+　④データを格納する BQ データセットを作成
+　　bq mk -d  loadavro
+
+（タスク 2）. ラボのアセットをダウンロードする
+　①ラボを完了するために必要なアセットを、ラボで指定された Compute Engine VM にダウンロード
+　　・ [Compute Engine]で検索 
+　　・プロビジョニングされた Linux VM が表示されます。[lab-vm] インスタンスの横にある [SSH] ボタンをクリック
+　②VM のターミナル プロンプトで、BigQuery に格納するために処理する Avro ファイルをダウンロードします。
+　　・wget https://storage.googleapis.com/cloud-training/dataengineering/lab_assets/idegc/campaigns.avro
+　③先ほど作成したステージング用の Cloud Storage バケットにローカルにあるAvro ファイルを移動
+　　・gcloud storage cp campaigns.avro gs://PROJECT_ID
+　④Serverless 環境で実行する Spark コードを含んだアーカイブをダウンロードします。
+　wget https://storage.googleapis.com/cloud-training/dataengineering/lab_assets/idegc/dataproc-templates.zip
+　⑤アーカイブを解凍します。
+　　unzip dataproc-templates.zip
+　⑥Python ディレクトリに移動します。
+　cd dataproc-templates/python
+　
+（タスク 3）. Spark コードを構成し、実行する
+　①VM インスタンスのターミナルで環境変数をいくつか設定
+　　（Dataproc Serverless 環境に次の環境変数を設定します。）
+　　export GCP_PROJECT=PROJECT_ID
+　　export REGION=REGION
+　　export GCS_STAGING_LOCATION=gs://PROJECT_ID
+　　export JARS=gs://cloud-training/dataengineering/lab_assets/idegc/spark-bigquery_2.12-20221021-2134.jar
+　　
+　②次のコードで Spark Cloud Storage to BigQuery テンプレートを実行し、Avro ファイルを BigQuery に読み込みます。
+　　./bin/start.sh \
+-- --template=GCSTOBIGQUERY \
+    --gcs.bigquery.input.format="avro" \
+    --gcs.bigquery.input.location="gs://PROJECT_ID" \
+    --gcs.bigquery.input.inferschema="true" \
+    --gcs.bigquery.output.dataset="loadavro" \
+    --gcs.bigquery.output.table="campaigns" \
+    --gcs.bigquery.output.mode=overwrite\
+    --gcs.bigquery.temp.bucket.name="PROJECT_ID-bqtemp"
+    
+（タスク 4）. データが正しく BigQuery に読み込まれたことを確認する
+　①BigQuery の新しいテーブルでデータを表示
+　　bq query \
+ --use_legacy_sql=false \
+ 'SELECT * FROM `loadavro.campaigns`;'
+
+*/
