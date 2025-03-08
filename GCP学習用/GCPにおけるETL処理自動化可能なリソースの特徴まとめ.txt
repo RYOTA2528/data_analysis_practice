@@ -18,4 +18,4 @@ Eventarc:
 
 トリガー: イベントソース（BigQuery、Cloud Storage、Pub/Subなど）
 利用場面: イベント駆動型アーキテクチャの構築、サービス間の疎結合
-特徴: CloudEvent標準でイベントを統一的に処理、サーバーレス
+特徴: CloudEvent標準でイベントを統一的に処理、サーバーレス.BigQueryテーブルで 挿入オペレーションが発生すると Cloud Audit Logsイベントが生成されます
