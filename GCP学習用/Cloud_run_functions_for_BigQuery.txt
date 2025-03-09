@@ -1,0 +1,123 @@
+/*
+【Cloud Run Functionsの特徴】
+loud Run Functions は、Cloud Runの特別なバージョンで、サーバーレス環境で関数（関数型プログラミング）を実行するためのサービスです。つまり、HTTPリクエストやイベント（例えば、ファイルのアップロードやデータの変更など）に応じて特定のコードを実行する、簡単に言うと「関数を実行するためのサービス
+*/
+
+
+/*
+【ハンズオンの内容】
+Google Cloud SDK を使用して BigQuery テーブルを読み込む Cloud Run 関数を作成、デプロイ、テストする方法を説明
+*/
+
+
+/*
+【ハンズオンの流れ】
+Cloud Run Functionsを作成する
+Cloud Run Functionsをデプロイしてテストする
+BigQuery と Cloud Run Functionsのログでデータを表示する
+*/
+
+
+/*
+【作業内容】
+※最初に、loadBigQueryFromAvro という名前の簡単な関数を作成します。この関数は、Cloud Storage にアップロードされた Avro ファイルを読み取ってから、BigQuery でテーブルを作成して読み込みます。
+
+(タスク 1. 関数を作成する)
+①[Compute Engine] をクリック
+②[SSH] ボタンをクリック
+③SSH ターミナルで、次のコマンドを実行して Cloud Run 関数のリージョンを設定
+　gcloud config set functions/region REGION
+④index.js 作成し、編集
+　nano index.js
+⑤次の内容を index.js ファイルにコピー
+/**
+* index.js Cloud Function - Avro on GCS to BQ
+*/
+const {Storage} = require('@google-cloud/storage');
+const {BigQuery} = require('@google-cloud/bigquery');
+
+const storage = new Storage();
+const bigquery = new BigQuery();
+
+exports.loadBigQueryFromAvro = async (event, context) => {
+    try {
+        // Check for valid event data and extract bucket name
+        if (!event || !event.bucket) {
+            throw new Error('Invalid event data. Missing bucket information.');
+        }
+
+        const bucketName = event.bucket;
+        const fileName = event.name;
+
+        // BigQuery configuration
+        const datasetId = 'loadavro';
+        const tableId = fileName.replace('.avro', ''); 
+
+        const options = {
+            sourceFormat: 'AVRO',
+            autodetect: true, 
+            createDisposition: 'CREATE_IF_NEEDED',
+            writeDisposition: 'WRITE_TRUNCATE',     
+        };
+
+        // Load job configuration
+        const loadJob = bigquery
+            .dataset(datasetId)
+            .table(tableId)
+            .load(storage.bucket(bucketName).file(fileName), options);
+
+        await loadJob;
+        console.log(`Job ${loadJob.id} completed. Created table ${tableId}.`);
+
+    } catch (error) {
+        console.error('Error loading data into BigQuery:', error);
+        throw error; 
+    }
+};
+
+（タスク 2）. Cloud Storage バケットと BigQuery データセットを作成する
+※Cloud Run 関数を呼び出すために使用するアセット（Cloud Storage バケット）を保存し、完了時に BigQuery に出力を保存するためのバックグラウンド インフラストラクチャを設定
+①次のコマンドを使用して、新しい Cloud Storage バケットをステージング ロケーションとして作成
+　gsutil mb -p  PROJECT_ID gs://PROJECT_ID
+②データを保存する BigQuery データセットを作成
+bq mk -d  loadavro
+
+（タスク 3）. 関数をデプロイする
+新しい Cloud Run 関数をデプロイし、データが BigQuery に読み込まれるようにトリガー
+①すべてのシステム設定が適切であることを確認するために、Cloud Run 関数の API を無効にし、再度有効にします。
+　gcloud services disable cloudfunctions.googleapis.com
+　gcloud services enable cloudfunctions.googleapis.com
+②Cloud Run 関数が処理を実行するためには、appspot サービス アカウントに artifactregistry.reader 権限を追加する必要があります。
+gcloud projects add-iam-policy-binding PROJECT_ID \
+--member="serviceAccount:PROJECT_ID@appspot.gserviceaccount.com" \
+--role="roles/artifactregistry.reader"
+③Cloud Storage から読み取り、BigQuery に出力を保存するには、2 つの javascript ライブラリをインストールする必要があります。
+④次のコマンドを使用して、関数をデプロイ
+gcloud functions deploy loadBigQueryFromAvro \
+    --project PROJECT_ID \
+    --runtime nodejs20 \
+    --trigger-resource gs://PROJECT_ID \
+    --trigger-event google.storage.object.finalize \
+    --no-gen2
+    
+⑤BigQuery に保存するために、Cloud Run 関数で処理される Avro ファイルをダウンロード
+wget https://storage.googleapis.com/cloud-training/dataengineering/lab_assets/idegc/campaigns.avro
+⑥先ほど作成したステージング用の Cloud Storage バケットに Avro ファイルを移動します。このアクションが Cloud Run 関数をトリガーします。
+gcloud storage cp campaigns.avro gs://PROJECT_ID
+
+（タスク 4）. データが BigQuery に読み込まれたことを確認する
+※Cloud Run 関数をデプロイしてトリガーしたので、BigQuery で結果を調べます。
+①SSH ターミナルで bq コマンドを使用して以下のクエリを実行
+bq query \
+ --use_legacy_sql=false \
+ 'SELECT * FROM `loadavro.campaigns`;'
+
+（タスク 5）. ログを表示する
+Cloud Run 関数が実行されるたびに、詳細なログが保持されます。このラボの最後のステップとして、Cloud Run 関数のログを調べます。
+①ログを確認し、ログの履歴でメッセージを表示するには、SSH ターミナルで次のコマンドを実行
+gcloud functions logs read loadBigQueryFromAvro
+
+
+*/
+
+
