@@ -117,7 +117,7 @@ Cloud Run 関数が実行されるたびに、詳細なログが保持されます。このラボの最後のステ
 ①ログを確認し、ログの履歴でメッセージを表示するには、SSH ターミナルで次のコマンドを実行
 gcloud functions logs read loadBigQueryFromAvro
 
-
+修正
 */
 
 
