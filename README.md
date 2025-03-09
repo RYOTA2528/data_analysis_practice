@@ -7,6 +7,12 @@
   
   
 ### [成果物一覧] <br>
+
+#### [資格・BADGE]
+- 2022年2月：AWS Certified Cloud Practitioner 認定
+  （以下Google Cloudの取得BADGE）
+- 2025年5月：Introduction to Data Engineering on Google Cloud
+
 #### [DAYxxx_larning_list]
 (概要)2024年11月よりPython/AWS/DB関係の学習を開始。学習により身に着けたスキルセットを可視化
 - numpy,pandas,matplotlib,seabornの基礎習得済み(DAYxxx_python_larning_list内、[DAY1~]にて学習済み)
