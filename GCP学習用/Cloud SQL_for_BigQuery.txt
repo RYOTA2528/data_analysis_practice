@@ -1,0 +1,145 @@
+/*
+【Cloud SQLの特徴】
+フルマネージドサービス
+Googleがインスタンスの管理（バックアップ、更新、スケーリングなど）を代行し、運用の負担を軽減。
+
+サポートするデータベース
+MySQL、PostgreSQL、Microsoft SQL Serverに対応。
+
+セキュリティ
+データの暗号化（保存中および転送中）とファイアウォールによるアクセス制御が提供され、高いセキュリティ。
+
+スケーラビリティ
+垂直スケーリング（マシンサイズ変更）や、リードレプリカを使用した水平スケーリングが可能。
+
+高可用性
+フェイルオーバーレプリカを用いて、ゾーン障害時にも自動的にフェイルオーバーし、可用性を確保。
+
+バックアップとリカバリ
+定期的なバックアップと、ポイントインタイムリカバリがサポートされ、データ損失を防ぐ。
+
+簡単な接続
+標準のデータベースドライバを使い、他のGoogle Cloudサービスや外部アプリケーションからも接続可能。
+
+管理の簡素化
+Googleがパッチ適用、ソフトウェアの更新、レプリケーション設定を行い、ユーザーは運用に煩わされることなく利用できる。
+*/
+
+
+/*
+【ハンズオンの流れ】
+Cloud SQL インスタンスを作成する
+Cloud SQL データベースを作成する
+Cloud SQL にテキストデータをインポートする
+データの整合性を確認する
+*/
+
+
+/*
+【作業内容】
+・gcloud で以下command実施
+　・gcloud auth list　：有効なアカウント名を一覧表示
+　・gcloud config list project　：プロジェクト ID を一覧表示
+
+（タスク 1. 環境を準備する）
+①プロジェクト ID の環境変数と、データを格納する Storage バケットの環境変数を作成します。
+export PROJECT_ID=$(gcloud info --format='value(config.project)')　→--format='value(config.project)' と指定することで、プロジェクトIDのみを抽出
+export BUCKET=${PROJECT_ID}-ml　→PROJECT_ID の値に -ml を付けた文字列を BUCKET に代入しています。 例えば、PROJECT_ID が my-project だとすると、BUCKET は my-project-ml という値
+
+
+（タスク 2. Cloud SQL インスタンスを作成する）
+①Cloud SQL インスタンスを作成
+gcloud sql instances create taxi \
+    --tier=db-n1-standard-1 --activation-policy=ALWAYS
+    
+【上記補足】
+--tier はインスタンスの性能レベルを指定します。ここで指定されている db-n1-standard-1 は、Google Cloud SQL インスタンスのマシンタイプで、1つのvCPUと3.75GBのメモリを提供する中程度の性能を持つインスタンスの構成
+
+②Cloud SQL インスタンスの root パスワードを設定
+gcloud sql users set-password root --host % --instance taxi \
+ --password Passw0rd
+ 
+③Cloud Shell の 自分のIP アドレスを格納する環境変数を作成
+export ADDRESS=$(wget -qO - http://ipecho.net/plain)/32
+
+④SQL インスタンスへの管理アクセスを有効にするために、Cloud Shell インスタンスを許可リストに登録
+gcloud sql instances patch taxi --authorized-networks $ADDRESS
+
+⑤Cloud SQL インスタンスの IP アドレスを取得
+MYSQLIP=$(gcloud sql instances describe \
+taxi --format="value(ipAddresses.ipAddress)")
+
+⑥echo $MYSQLIP
+
+⑦mysql コマンドライン インターフェースにログイン
+mysql --host=$MYSQLIP --user=root \
+      --password --verbose
+      
+⑧次の内容をコマンドラインに貼り付け、trips テーブルのスキーマを作成
+create database if not exists bts;
+use bts;
+
+drop table if exists trips;
+
+create table trips (
+  vendor_id VARCHAR(16),		
+  pickup_datetime DATETIME,
+  dropoff_datetime DATETIME,
+  passenger_count INT,
+  trip_distance FLOAT,
+  rate_code VARCHAR(16),
+  store_and_fwd_flag VARCHAR(16),
+  payment_type VARCHAR(16),
+  fare_amount FLOAT,
+  extra FLOAT,
+  mta_tax FLOAT,
+  tip_amount FLOAT,
+  tolls_amount FLOAT,
+  imp_surcharge FLOAT,
+  total_amount FLOAT,
+  pickup_location_id VARCHAR(16),
+  dropoff_location_id VARCHAR(16)
+);
+
+
+⑨テーブル定義を確認
+describe trips;
+
+
+⑩select distinct(pickup_location_id) from trips;　で空のテーブルであることを確認
+
+⑪exit
+
+
+（タスク 3. Cloud SQL インスタンスにデータを追加する）
+※Cloud Storage に保存されているニューヨーク市のタクシー賃走の CSV ファイルをローカルにコピーします。リソース使用量を抑えるために、データのサブセットのみ（約 20,000 行）を使用
+
+①コマンドラインで次のコマンドを実行
+gcloud storage cp gs://cloud-training/OCBL013/nyc_tlc_yellow_trips_2018_subset_1.csv trips.csv-1
+gcloud storage cp gs://cloud-training/OCBL013/nyc_tlc_yellow_trips_2018_subset_2.csv trips.csv-2
+
+
+②mysql インタラクティブ コンソールに接続して、ローカルの infile データを読み込みます。
+mysql --host=$MYSQLIP --user=root  --password  --local-infile
+
+③use bts;
+
+④local-infile を使用してローカル CSV ファイルのデータを読み込み
+LOAD DATA LOCAL INFILE 'trips.csv-1' INTO TABLE trips
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(vendor_id,pickup_datetime,dropoff_datetime,passenger_count,trip_distance,rate_code,store_and_fwd_flag,payment_type,fare_amount,extra,mta_tax,tip_amount,tolls_amount,imp_surcharge,total_amount,pickup_location_id,dropoff_location_id);
+
+LOAD DATA LOCAL INFILE 'trips.csv-2' INTO TABLE trips
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(vendor_id,pickup_datetime,dropoff_datetime,passenger_count,trip_distance,rate_code,store_and_fwd_flag,payment_type,fare_amount,extra,mta_tax,tip_amount,tolls_amount,imp_surcharge,total_amount,pickup_location_id,dropoff_location_id);
+
+（タスク 4. データの整合性を確認する）
+select distinct(pickup_location_id) from trips;
+
+*/
+
+
