@@ -1,0 +1,61 @@
+1. BigQueryメタデータの活用
+BigQueryには、データセットやテーブルのメタデータが保存されており、これをSQLクエリで簡単に取得できます。これにより、テーブルの情報（例えば、行数、サイズ、パーティション分割の有無、更新日など）を手早く把握することができます。これが重要なのは、データエンジニアが限られた時間内にデータの内容や構造を理解し、最適なデータ処理を行うためです。
+
+2. INFORMATION_SCHEMAを使用したメタデータの探索
+BigQueryでは、メタデータ情報を得るためにINFORMATION_SCHEMAという特殊なシステムビューを使用できます。以下は代表的なクエリです。
+
+テーブルのメタデータ
+INFORMATION_SCHEMA.TABLESを使って、テーブルのサイズや行数、更新日時、パーティション設定などを取得できます。例えば、次のようなクエリで、指定したデータセット内のテーブル情報を取得できます。
+
+sql
+コピーする
+SELECT 
+  table_name, 
+  creation_time, 
+  last_modified_time, 
+  size_bytes, 
+  row_count
+FROM 
+  `bigquery-public-data.baseball.INFORMATION_SCHEMA.TABLES`
+このクエリは、テーブルの作成日や最終更新日、サイズ、行数などのメタデータを返します。さらに、サイズはバイト単位で返されるため、必要に応じて変換して可読性の高い単位にすることができます。
+
+列のメタデータ
+INFORMATION_SCHEMA.COLUMNSを使用して、テーブル内の列の情報（データ型、NULL許容、順序、生成列など）を取得できます。例えば、以下のようなクエリで特定のテーブルの列情報を確認できます。
+
+sql
+コピーする
+SELECT 
+  column_name, 
+  data_type, 
+  is_nullable 
+FROM 
+  `bigquery-public-data.baseball.INFORMATION_SCHEMA.COLUMNS`
+WHERE 
+  table_name = 'games_wide'
+このクエリを実行することで、games_wideテーブルのすべての列名やデータ型、NULL値を許可するかどうかなどの情報を得ることができます。
+
+3. パーティションとクラスタリング
+データエンジニアにとって、テーブルのパーティション分割やクラスタリングが使用されているかどうかを調べることは重要です。パーティション分割とクラスタリングを使用することで、大規模なデータセットのパフォーマンスを向上させることができます。INFORMATION_SCHEMA.COLUMNSビューを使って、テーブルにパーティション分割列やクラスタリング列が設定されているかどうかを簡単に調べることができます。
+
+4. 複数のデータセットを横断的に検索
+INFORMATION_SCHEMAビューを使って、複数のデータセットやテーブルを横断的に検索することができます。例えば、複数のデータセットに含まれるすべてのテーブルのメタデータを一度に取得することができます。このように、UNION ALLを使って複数のテーブル情報を統合することも可能です。
+
+sql
+コピーする
+SELECT * FROM `bigquery-public-data.new_york.INFORMATION_SCHEMA.TABLES`
+UNION ALL
+SELECT * FROM `bigquery-public-data.baseball.INFORMATION_SCHEMA.TABLES`
+このクエリは、new_yorkとbaseballデータセットに含まれるすべてのテーブルを一覧表示し、それらのメタデータを確認できます。
+
+5. 特定のプロジェクト内のすべてのデータセットを表示
+特定のGCPプロジェクト内にあるすべてのデータセットをクエリすることもできます。これを実現するためには、INFORMATION_SCHEMA.SCHEMATAビューを使用します。例えば、以下のようなクエリを使って、特定のプロジェクト内のすべてのデータセットのリストを取得できます。
+
+sql
+コピーする
+SELECT schema_name 
+FROM `project_id.INFORMATION_SCHEMA.SCHEMATA`
+このクエリを使うと、指定したプロジェクトに含まれているすべてのデータセットを一覧表示することができます。
+
+6. データセットの再作成（高度なユースケース）
+最後に、データセット内のすべてのテーブルを再作成するクエリのユースケースが紹介されています。これにより、例えば本番環境やステージング環境でデータセットやテーブルを再作成したり、スキーマを再生成したりすることができます。このプロセスをプログラムで自動化する方法として、CREATE FUNCTIONを使ったアプローチが紹介されています。
+
