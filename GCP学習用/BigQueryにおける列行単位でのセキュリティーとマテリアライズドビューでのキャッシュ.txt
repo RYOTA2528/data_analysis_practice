@@ -1,0 +1,70 @@
+/*
+BigQueryにおける行レベルのセキュリティ（Row-Level Security）や、マテリアライズドビュー（Materialized Views）に関する実際のクエリの例を以下に示します。
+
+1. 行レベルのセキュリティ (Row-Level Security) の例
+行レベルのセキュリティは、テーブル内のデータのアクセスを制限するために使います。ユーザーごとに表示するデータを制限するフィルタを設定します。
+
+行レベルアクセスポリシーを設定するクエリ例:
+まず、行レベルのセキュリティポリシーをテーブルに設定します。このポリシーでは、特定のユーザーまたはグループが特定の行データにアクセスできるように制御します。
+
+sql
+コピーする
+-- 行レベルアクセスポリシーの作成
+CREATE OR REPLACE ROW ACCESS POLICY my_row_access_policy
+  ON `my_project.my_dataset.my_table`
+  POLICY TAG 'group:apac' 
+  USING (region = 'APAC');
+この例では、my_project.my_dataset.my_tableというテーブルに対して、group:apacのユーザーが「APAC」地域のデータにアクセスできるように設定しています。region列の値が「APAC」の行のみが表示されます。
+
+行レベルセキュリティを適用したクエリの実行例:
+行レベルのポリシーが適用されたテーブルに対してクエリを実行する際、フィルタが自動的に適用されます。たとえば、次のようにデータを取得します。
+
+sql
+コピーする
+-- 行レベルのセキュリティが適用されているテーブルからデータをクエリ
+SELECT *
+FROM `my_project.my_dataset.my_table`
+WHERE region = 'APAC';
+上記のクエリを実行すると、region = 'APAC'に一致する行だけが表示されます。このフィルタは行レベルセキュリティポリシーによって自動的に適用されます。
+
+2. マテリアライズドビュー (Materialized View) の例
+マテリアライズドビューは、事前に計算された結果を保存するため、クエリの実行時にパフォーマンス向上を図るために使用します。頻繁に実行するクエリに特に効果的です。
+
+マテリアライズドビューの作成例:
+sql
+コピーする
+-- マテリアライズドビューの作成
+CREATE MATERIALIZED VIEW `my_project.my_dataset.my_materialized_view` AS
+SELECT
+  region,
+  COUNT(*) AS total_sales,
+  SUM(amount) AS total_revenue
+FROM `my_project.my_dataset.sales`
+GROUP BY region;
+このクエリでは、salesテーブルのデータを基に、地域ごとの売上件数と収益を集計したマテリアライズドビューを作成しています。このビューには事前に集計されたデータが保存され、繰り返し実行するクエリのパフォーマンスを向上させます。
+
+マテリアライズドビューをクエリする例:
+マテリアライズドビューに対してクエリを実行すると、BigQueryは事前にキャッシュされた結果を返します。
+
+sql
+コピーする
+-- マテリアライズドビューからデータを取得
+SELECT * FROM `my_project.my_dataset.my_materialized_view`
+WHERE total_sales > 1000;
+このクエリは、マテリアライズドビューから集計されたデータを基に「売上件数が1000件以上」の地域を取得します。通常のクエリよりも高速に結果が返されます。
+
+行レベルセキュリティとマテリアライズドビューを併用したケース
+もし行レベルのセキュリティを有効にしたテーブルをマテリアライズドビューに使用する場合も、セキュリティフィルタが適用されます。例えば、APAC地域のデータのみを対象にしたビューを作成することができます。
+
+sql
+コピーする
+-- 行レベルセキュリティが適用されたテーブルを使ってマテリアライズドビューを作成
+CREATE MATERIALIZED VIEW `my_project.my_dataset.apac_sales_view` AS
+SELECT region, COUNT(*) AS total_sales, SUM(amount) AS total_revenue
+FROM `my_project.my_dataset.sales`
+WHERE region = 'APAC'
+GROUP BY region;
+このビューはregion = 'APAC'に絞った売上データのみをキャッシュします。ビューのクエリを実行する際も、このフィルタが自動的に適用され、パフォーマンスが向上します。
+
+これらのクエリは、BigQueryの行レベルセキュリティやマテリアライズドビューを実際に使う際の一部の例ですが、ビジネスニーズに応じて柔軟に構築することができます。
+*/
