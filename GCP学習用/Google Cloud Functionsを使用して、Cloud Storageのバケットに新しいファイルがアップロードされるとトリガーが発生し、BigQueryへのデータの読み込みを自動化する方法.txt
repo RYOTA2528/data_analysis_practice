@@ -1,0 +1,102 @@
+/*
+【概要】
+Google Cloud Functionsを使用して、Cloud Storageのバケットに新しいファイルがアップロードされるとトリガーが発生し、BigQueryへのデータの読み込みを自動化する方法
+*/
+
+/*
+【 Cloud Storageにバケットを作成】
+まず、CSVファイルをアップロードするためのCloud Storageバケットを作成します。
+
+Google Cloud Consoleにログインします。
+ナビゲーションメニューから「Storage」 > 「ブラウザ」を選択します。
+「バケットを作成」をクリックし、適切な設定（バケット名、リージョンなど）を指定してバケットを作成します。
+
+
+-----------------------------------------------------------------------------
+【Cloud Functionの作成手順】
+
+Google Cloud Consoleで「Cloud Functions」ページに移動します。
+「関数を作成」をクリックします。
+以下の設定を行います：
+トリガータイプ: 「Cloud Storage」を選択します。
+イベントタイプ: 「Finalized/Create」を選択します（これにより、新しいファイルがバケットにアップロードされたときにトリガーされます）。
+バケット: CSVファイルがアップロードされるバケットを選択します。
+ランタイム: Pythonを選択します（他の言語もサポートされていますが、今回はPythonで進めます）。
+ソースコードを記述します。以下にPythonの例を示します。
+3. Pythonコード（Cloud Function）
+Cloud Function内で以下のコードを使用して、Cloud StorageにアップロードされたCSVファイルをBigQueryにインポートする処理を実行します。
+
+python
+コピーする
+import os
+from google.cloud import bigquery
+from google.cloud import storage
+import csv
+
+# BigQueryクライアントを作成
+bq_client = bigquery.Client()
+
+# Cloud Storageクライアントを作成
+storage_client = storage.Client()
+
+def load_csv_to_bigquery(event, context):
+    """CSVファイルがCloud Storageにアップロードされた際にBigQueryに読み込む"""
+
+    # Cloud Storageからファイル情報を取得
+    bucket_name = event['bucket']
+    file_name = event['name']
+
+    # Cloud StorageのCSVファイルへのURI
+    file_uri = f'gs://{bucket_name}/{file_name}'
+
+    # BigQueryに読み込むテーブルID
+    dataset_id = 'my_dataset'  # データセットID
+    table_id = 'my_table'      # テーブルID
+
+    # BigQueryのテーブルID
+    full_table_id = f'{bq_client.project}.{dataset_id}.{table_id}'
+
+    # BigQueryにインポートする設定
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.CSV,
+        skip_leading_rows=1,  # ヘッダー行をスキップ
+        autodetect=True,  # スキーマを自動検出
+    )
+
+    # Cloud StorageからBigQueryへCSVデータをロード
+    load_job = bq_client.load_table_from_uri(
+        file_uri,
+        full_table_id,
+        job_config=job_config,
+    )
+
+    # ロードジョブが完了するまで待機
+    load_job.result()
+
+    print(f'File {file_name} successfully loaded into {full_table_id}')
+4. コードの説明
+load_csv_to_bigquery関数:
+この関数は、Cloud Storageに新しいCSVファイルがアップロードされると自動的に実行されます。
+Cloud Storage: アップロードされたCSVファイルの情報（バケット名やファイル名）を取得します。
+BigQuery: CSVファイルをBigQueryテーブルにロードします。skip_leading_rows=1は、CSVの最初のヘッダー行をスキップするために使用します。
+自動スキーマ検出: autodetect=Trueを設定すると、BigQueryがCSVの構造を自動的に解析し、適切なスキーマを決定します。
+
+------------------------------------------------------------------------------------------------------------
+
+
+【Cloud Functionをデプロイ】
+Cloud Functionを作成してデプロイするために、以下のようにコマンドライン（Cloud Shellなど）でデプロイできます：
+
+bash
+コピーする
+gcloud functions deploy load_csv_to_bigquery \
+  --runtime python39 \
+  --trigger-resource YOUR_BUCKET_NAME \
+  --trigger-event google.storage.object.finalize
+YOUR_BUCKET_NAME: 実際にCSVファイルがアップロードされるCloud Storageのバケット名に置き換えてください。
+--runtime python39: 使用するPythonのバージョンです。
+--trigger-resource: トリガーとして使用するCloud Storageのバケットを指定します。
+--trigger-event: CSVファイルがアップロードされたときに発生するイベントです。
+6. CSVファイルのアップロード
+Cloud StorageバケットにCSVファイルをアップロードすると、Cloud Functionがトリガーされ、そのCSVファイルが自動的にBigQueryにインポートされます。
+*/
