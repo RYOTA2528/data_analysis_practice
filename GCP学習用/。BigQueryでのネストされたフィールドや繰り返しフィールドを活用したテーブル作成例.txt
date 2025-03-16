@@ -1,0 +1,101 @@
+テーブル設計の説明
+Gojekの注文データを例に、以下のような情報を保存するテーブルを作成します：
+
+注文ID（OrderID）
+顧客ID（CustomerID）
+注文日（OrderDate）
+イベント情報（Event）: 配車予約や配車確定などのイベントを**繰り返し（ARRAY）**として格納
+乗車場所（Pickup）: 乗車地点の情報をSTRUCTとして格納
+目的地（Destination）: 降車地点の情報をSTRUCTとして格納
+2. BigQueryクエリ：テーブル作成例
+以下のクエリは、ネストされたフィールドと繰り返しフィールドを活用したテーブルの作成例です。
+
+sql
+コピーする
+-- BigQueryのテーブル作成クエリ
+CREATE OR REPLACE TABLE `your_project.your_dataset.orders` (
+  OrderID STRING,
+  CustomerID STRING,
+  OrderDate DATE,
+  Events ARRAY<STRUCT<
+    status STRING,
+    time TIMESTAMP
+  >>,
+  Pickup STRUCT<
+    location STRING,
+    latitude FLOAT64,
+    longitude FLOAT64
+  >,
+  Destination STRUCT<
+    location STRING,
+    latitude FLOAT64,
+    longitude FLOAT64
+  >
+);
+3. データ挿入例
+次に、上記のテーブルにデータを挿入するクエリの例を示します。例えば、1つの注文に複数のイベントが発生するシナリオを挿入します。
+
+sql
+コピーする
+-- データ挿入クエリ
+INSERT INTO `your_project.your_dataset.orders` (OrderID, CustomerID, OrderDate, Events, Pickup, Destination)
+VALUES
+  (
+    '123',
+    '101',
+    '2025-03-15',
+    [
+      STRUCT('order_placed', TIMESTAMP('2025-03-15T10:00:00')),
+      STRUCT('driver_assigned', TIMESTAMP('2025-03-15T10:05:00')),
+      STRUCT('ride_completed', TIMESTAMP('2025-03-15T10:30:00'))
+    ],
+    STRUCT('Jakarta', -6.2088, 106.8456),
+    STRUCT('Bali', -8.3405, 115.0920)
+  ),
+  (
+    '124',
+    '102',
+    '2025-03-16',
+    [
+      STRUCT('order_placed', TIMESTAMP('2025-03-16T11:00:00')),
+      STRUCT('driver_assigned', TIMESTAMP('2025-03-16T11:05:00'))
+    ],
+    STRUCT('Surabaya', -7.2504, 112.7688),
+    STRUCT('Yogyakarta', -7.8018, 110.3643)
+  );
+4. クエリ例：データの取得
+このテーブルからデータを取得するクエリの例です。例えば、すべての注文の詳細情報を取得し、イベント（ステータス）とタイムスタンプを含めて表示します。
+
+sql
+コピーする
+-- 注文ごとのイベント情報を表示
+SELECT
+  OrderID,
+  CustomerID,
+  OrderDate,
+  Pickup.location AS PickupLocation,
+  Destination.location AS DestinationLocation,
+  event.status AS EventStatus,
+  event.time AS EventTime
+FROM
+  `your_project.your_dataset.orders`,
+  UNNEST(Events) AS event
+ORDER BY
+  OrderID, EventTime;
+クエリの説明：
+CREATE TABLEで定義されたテーブルには、**ARRAY<STRUCT>やSTRUCT**を利用しています。
+**Events**は配列（ARRAY）で、複数のイベント（ステータスとタイムスタンプ）を格納します。
+**PickupとDestination**は構造体（STRUCT）で、場所の名前とその座標情報を持っています。
+データ挿入時に、各注文に複数のイベントを挿入し、ネストされたデータを格納しています。
+データ取得のクエリでは、UNNEST()を使用して、繰り返しフィールド（Events）の中身を展開し、注文ごとのイベント情報をフラットな形式で取得します。
+5. 結果例（取得結果）
+plaintext
+コピーする
+OrderID | CustomerID | OrderDate  | PickupLocation | DestinationLocation | EventStatus     | EventTime
+---------------------------------------------------------------------------------------------------------
+123     | 101        | 2025-03-15 | Jakarta        | Bali                | order_placed    | 2025-03-15 10:00:00 UTC
+123     | 101        | 2025-03-15 | Jakarta        | Bali                | driver_assigned | 2025-03-15 10:05:00 UTC
+123     | 101        | 2025-03-15 | Jakarta        | Bali                | ride_completed  | 2025-03-15 10:30:00 UTC
+124     | 102        | 2025-03-16 | Surabaya       | Yogyakarta          | order_placed    | 2025-03-16 11:00:00 UTC
+124     | 102        | 2025-03-16 | Surabaya       | Yogyakarta          | driver_assigned | 2025-03-16 11:05:00 UTC
+このように、ネストされたフィールドと繰り返しフィールドを活用することで、複雑なデータを1つのテーブル内に整理でき、効率的にデータの管理やクエリが可能
