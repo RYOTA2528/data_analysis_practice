@@ -1,0 +1,77 @@
+/*
+【概要】
+、Google Cloud Dataflow（Apache Beam）を使用して、CSVファイルからデータを読み込み、変換を行い、その後BigQueryにデータをロードするプロセスを示しています。
+*/
+
+/*
+1. 必要なライブラリのインポート
+python
+コピーする
+from apache_beam.io import WriteToBigQuery
+import apache_beam as beam
+ここでは、Apache Beamのbeamモジュールと、BigQueryにデータを書き込むためのWriteToBigQueryをインポートしています。
+
+beamは、Apache Beamの主要な機能を提供するモジュールです。
+WriteToBigQueryは、データをBigQueryに書き込むためのApache Beamのトランスフォームです。
+2. データ変換の関数の定義
+python
+コピーする
+def transform_data(record):
+    # ここでデータ変換の処理を実行
+    record['new_column'] = int(record['column2'])
+    return record
+transform_dataという関数を定義しています。この関数は、渡されたrecord（レコード）に対して変換を行います。
+
+recordは辞書型のデータで、column1とcolumn2という2つのフィールドを含んでいます。
+ここでは、column2の値を整数型に変換して、new_columnという新しいカラムとして追加しています。
+3. Dataflow（Apache Beam）のパイプラインを定義
+python
+コピーする
+with beam.Pipeline() as pipeline:
+ここで、Apache Beamのパイプラインを作成します。beam.Pipeline()は、データ処理の流れ（パイプライン）を定義するために使用します。このwith構文により、パイプラインの処理が開始され、終了します。
+
+4. パイプライン内での処理
+python
+コピーする
+    (pipeline
+     | 'Read Data' >> beam.io.ReadFromText('gs://my_bucket/my_data.csv')
+     | 'Transform Data' >> beam.Map(transform_data)
+     | 'Write to BigQuery' >> WriteToBigQuery(
+           'my_project:my_dataset.transformed_table',
+           schema='column1:STRING, new_column:INT64',
+           write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE)
+    )
+この部分は、パイプライン内で実行される各ステップ（変換）の流れを定義しています。
+
+4.1 データの読み込み
+python
+コピーする
+| 'Read Data' >> beam.io.ReadFromText('gs://my_bucket/my_data.csv')
+このステップでは、beam.io.ReadFromTextを使ってCloud Storage（gs://my_bucket/my_data.csv）からCSVファイルを読み込んでいます。ファイル内のデータは、行ごとに処理され、1行ずつrecordとして渡されます。
+
+4.2 データの変換
+python
+コピーする
+| 'Transform Data' >> beam.Map(transform_data)
+ここで、beam.Mapを使って、先ほど定義したtransform_data関数を各データ行（record）に適用しています。transform_data関数は、各レコードにnew_columnという新しいフィールドを追加します。
+
+beam.Mapは、リストやデータストリームに対して関数を適用するためのトランスフォームです。
+4.3 データをBigQueryに書き込む
+python
+コピーする
+| 'Write to BigQuery' >> WriteToBigQuery(
+       'my_project:my_dataset.transformed_table',
+       schema='column1:STRING, new_column:INT64',
+       write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE)
+最終的に、変換されたデータをBigQueryに書き込むステップです。
+
+WriteToBigQueryは、データをBigQueryのテーブルに書き込むためのBeamトランスフォームです。
+my_project:my_dataset.transformed_tableは、書き込む先のBigQueryテーブルを指定しています。
+schema='column1:STRING, new_column:INT64'は、BigQueryに書き込むテーブルのスキーマを定義しています。この場合、column1は文字列型（STRING）、new_columnは整数型（INT64）です。
+write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATEは、テーブルにデータを追加する際に、既存のデータを削除してから新しいデータを挿入する設定です（WRITE_TRUNCATE）。
+5. パイプラインの実行
+python
+コピーする
+with beam.Pipeline() as pipeline:
+この部分で、パイプラインの定義が開始され、withブロックの終了時に実行が開始されます。Pipeline()は、実行環境（例えば、Cloud Dataflow）で実際にこのパイプラインを実行するために使います。
+*/
