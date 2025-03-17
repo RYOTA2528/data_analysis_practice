@@ -1,0 +1,245 @@
+/*
+【ハンズオンの流れ】
+・半構造化 JSON を BigQuery に読み込む
+・配列の作成とクエリ
+・構造体の作成とクエリ
+・ネストされた繰り返しフィールドのクエリ
+*/
+
+
+/*
+【配列の扱い方】
+配列は単純に [ ] で囲まれた項目のリストである
+BigQuery では配列が「フラット化」されて表示され、配列の値が単純に一列にリストされる（それでも、これらの値は 1 つの行に含まれています）
+
+#standardSQL
+SELECT
+['raspberry', 'blackberry', 'strawberry', 'cherry'] AS fruit_array
+
+以下のクエリを試すエラーが生じる
+#standardSQL
+SELECT
+['raspberry', 'blackberry', 'strawberry', 'cherry', 1234567] AS fruit_array
+
+→Error: Array elements of types {INT64, STRING} do not have a common supertype at [3:1]
+
+（ポイント）：配列内では同じデータ型を使用する必要があります（すべて文字列、すべて数値など）
+*/
+
+/*
+【半構造化 JSON を BigQuery に読み込む】
+[テーブルを作成]
+↓
+ソース: [テーブルの作成元] プルダウンで [Google Cloud Storage] を選択します。
+↓
+GCS バケットからファイルを選択（次を入力または貼り付け）: 「cloud-training/data-insights-course/labs/optimizing-for-performance/shopping_cart.json」
+↓
+ファイル形式: JSONL（改行区切り JSON）{自動的に入力されます}
+↓
+[スキーマ]: [自動検出] チェックボックスをオンにします（スキーマと入力パラメータ）。
+新しいテーブルの名前を「fruit_details」にします。
+↓
+[テーブルを作成] をクリックします。
+↓
+
+※スキーマで fruit_array が「REPEATED」に設定されているため、このフィールドが配列であることがわかります。
+（BigQuery では配列を繰り返しフィールド（REPEATED）と呼ぶ）
+
+*/
+
+
+/*
+【 ARRAY_AGG() を使用して独自の配列を作成する】
+ARRAY_AGG() 関数を使用して、これらの文字列値を 1 つの配列にまとめます。以下のクエリをコピーして貼り付け、この一般公開データセットを探索します。
+
+SELECT
+  fullVisitorId,
+  date,
+  ARRAY_AGG(v2ProductName) AS products_viewed,
+  ARRAY_AGG(pageTitle) AS pages_viewed
+  FROM `data-to-insights.ecommerce.all_sessions`
+WHERE visitId = 1501570398
+GROUP BY fullVisitorId, date
+ORDER BY date
+
+次に、ARRAY_LENGTH() 関数を使用して、閲覧されたページと商品の数を調べます。
+SELECT
+  fullVisitorId,
+  date,
+  ARRAY_AGG(v2ProductName) AS products_viewed,
+  ARRAY_LENGTH(ARRAY_AGG(v2ProductName)) AS num_products_viewed,
+  ARRAY_AGG(pageTitle) AS pages_viewed,
+  ARRAY_LENGTH(ARRAY_AGG(pageTitle)) AS num_pages_viewed
+  FROM `data-to-insights.ecommerce.all_sessions`
+WHERE visitId = 1501570398
+GROUP BY fullVisitorId, date
+ORDER BY date
+
+
+※次のように、配列に関連する便利な関数があります。
+
+ARRAY_LENGTH(<array>) で要素の数を調べる
+ARRAY_AGG(DISTINCT <field>) で要素の重複を除去する
+ARRAY_AGG(<field> ORDER BY <field>) で要素を並べ替える
+ARRAY_AGG(<field> LIMIT 5) で要素の数を制限する
+
+*/
+
+
+/*
+【すでに配列が含まれているデータセットをクエリする】
+（ソースの概要）
+Google アナリティクス向けの BigQuery 一般公開データセット bigquery-public-data.google_analytics_sample には、このコースのデータセット data-to-insights.ecommerce.all_sessions より多くのフィールドと行が含まれています。さらに重要な点として、商品、ページ、トランザクションなどのフィールド値が、配列としてネイティブに格納されています。
+
+Google アナリティクス スキーマに含まれているフィールドは、ここで分析するには多すぎます。前と同じように、訪問者とページ名のフィールドだけをクエリすると以下エラーが表示
+SELECT
+  visitId,
+  hits.page.pageTitle
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_20170801`
+WHERE visitId = 1501570398
+
+↓
+※「Cannot access field product on a value with type ARRAY> at [5:8]」というエラーが表示されます。
+
+繰り返しフィールド（配列）を通常どおりにクエリするには、まず配列を分割して複数の行に戻す必要があります。
+
+たとえば、hits.page.pageTitle の配列は、次のように 1 つの行として格納されています。
+
+['homepage','product page','checkout']
+
+これを次のようにする必要があります。
+
+['homepage',
+'product page',
+'checkout']
+
+※配列フィールドで UNNEST() 関数を使用します。
+SELECT DISTINCT
+  visitId,
+  h.page.pageTitle
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_20170801`,
+UNNEST(hits) AS h
+WHERE visitId = 1501570398
+LIMIT 10
+
+（内容まとめ）
+配列要素を行に戻すには UNNEST() を使用する
+UNNEST() は常に FROM 句のテーブル名の後に指定する（概念的には、事前に結合されたテーブルに似ています）
+*/
+
+
+/*
+【構造体の概要】
+BigQueryでは、**構造体（STRUCT）**を使用して、複数のフィールドを一つの複合的なデータ型としてまとめることができます。構造体を使うことで、データをより意味のある形で組織化できます。これは、例えば、顧客情報のように、関連する複数の属性を一つのフィールドとして管理したい場合に役立ちます。
+
+1. テーブルに構造体を含むデータを挿入
+例えば、customer というテーブルに、顧客情報を格納する構造体を使用する場合：
+
+CREATE OR REPLACE TABLE customer_info AS
+SELECT
+  1 AS customer_id,
+  STRUCT(
+    'John Doe' AS name,
+    'john.doe@example.com' AS email,
+    35 AS age
+  ) AS customer_details;
+この例では、customer_details フィールドが構造体として定義されており、name、email、age という属性を持つ複合データ型です。これにより、顧客情報を一つのフィールド（customer_details）でまとめることができます。
+
+
+2. 構造体のデータをクエリで取得
+構造体内の特定のフィールドを参照するには、ドット（.）記法を使います。
+
+SELECT
+  customer_id,
+  customer_details.name,
+  customer_details.email,
+  customer_details.age
+FROM customer_info;
+このクエリは、customer_info テーブルから customer_id と、構造体 customer_details 内の name、email、age を取得します。
+
+
+3. 複数の構造体を含むテーブル
+BigQueryでは、構造体をさらにネスト（入れ子）させることもできます。例えば、住所情報を追加したい場合：
+
+CREATE OR REPLACE TABLE customer_info_with_address AS
+SELECT
+  1 AS customer_id,
+  STRUCT(
+    'John Doe' AS name,
+    'john.doe@example.com' AS email,
+    35 AS age,
+    STRUCT(
+      '123 Main St' AS street,
+      'Springfield' AS city,
+      'IL' AS state,
+      '62701' AS postal_code
+    ) AS address
+  ) AS customer_details;
+ここでは、customer_details 内にさらに address という構造体を持たせ、住所情報を格納しています。このように、構造体はネストすることで複雑なデータを整理できます。
+
+
+4. ネストされた構造体のデータをクエリで取得
+ネストされた構造体にアクセスするには、さらにドット（.）記法を使います。
+
+SELECT
+  customer_id,
+  customer_details.name,
+  customer_details.address.street,
+  customer_details.address.city
+FROM customer_info_with_address;
+このクエリは、顧客の名前、住所の番地、都市を取得します。ネストされた構造体の中のフィールドにアクセスするためには、構造体の名前をドットで区切って指定します。
+
+構造体を使う利点
+データの整理: 関連する情報（例えば、顧客情報や住所情報など）を一つのフィールドとしてまとめることで、データの整理がしやすくなります。
+複雑なデータ構造: 複雑なデータをネストして格納でき、SQLクエリで簡単に操作できます。
+可読性の向上: 複数の関連フィールドを一つのグループとしてまとめることで、テーブルの設計がより直感的で理解しやすくなります。
+*/
+
+
+/*
+【構造体と配列を組み合わせた例】
+※、顧客の情報を格納し、顧客が複数の注文を持ち、その注文内には複数のアイテムが含まれるという構造を作成します。
+CREATE OR REPLACE TABLE customer_orders AS
+SELECT
+  1 AS customer_id,
+  STRUCT(
+    'John Doe' AS name,
+    'john.doe@example.com' AS email
+  ) AS customer_details,
+  ARRAY<STRUCT<
+    STRING order_id,
+    DATE order_date,
+    ARRAY<STRUCT<STRING item_name, INT64 quantity, FLOAT64 price>>
+  >> [
+    STRUCT('order_001', DATE '2025-03-01', [STRUCT('item_001', 2, 19.99), STRUCT('item_002', 1, 9.99)]),
+    STRUCT('order_002', DATE '2025-03-05', [STRUCT('item_003', 3, 14.99), STRUCT('item_004', 1, 29.99)])
+  ] AS orders;
+
+※この例では、customer_orders というテーブルに、顧客の基本情報（customer_details）と、顧客が行った複数の注文（orders）を格納しています。注文の中には、注文ID、注文日、そして複数のアイテム（各アイテムには名前、数量、価格）が含まれる構造体と配列を使用しています。
+
+
+SELECT
+  customer_id,
+  customer_details.name,
+  customer_details.email,
+  order.order_id,
+  order.order_date,
+  item.item_name,
+  item.quantity,
+  item.price
+FROM customer_orders,
+  UNNEST(orders) AS order,
+  UNNEST(order.order_items) AS item;
+
+
+構造体（STRUCT） を使って、顧客情報（customer_details）や注文情報（order）をまとめています。
+配列（ARRAY） を使って、顧客が複数の注文（orders）を持ち、各注文内に複数のアイテム（order_items）を格納しています。
+UNNEST を使って、ネストされた配列の中身を展開し、必要な情報をフラットな形で取り出しています。
+利点
+データの構造化: 顧客の注文データやアイテムを整理された形で格納でき、複雑なデータモデルを簡潔に表現できます。
+柔軟性: 顧客が複数の注文を持ち、各注文に複数のアイテムがあるような場合でも、データを整然と管理でき、クエリを使って必要な情報を簡単に取得できます。
+ネストされたデータ: STRUCT と ARRAY の組み合わせにより、複雑なデータ構造でも効率的に管理でき、SQLで扱いやすい形になります。
+このように、BigQueryの構造体と配列を組み合わせることで、複雑なデータを柔軟に管理でき、必要な情報を効率よく抽出できます。
+*/
+
+
