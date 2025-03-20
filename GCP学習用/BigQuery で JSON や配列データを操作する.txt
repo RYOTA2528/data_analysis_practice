@@ -243,3 +243,17 @@ UNNEST ‚ğg‚Á‚ÄAƒlƒXƒg‚³‚ê‚½”z—ñ‚Ì’†g‚ğ“WŠJ‚µA•K—v‚Èî•ñ‚ğƒtƒ‰ƒbƒg‚ÈŒ`‚Åæ‚è
 */
 
 
+
+/*
+ySTRUCT‚É’u‚¯‚éCROSS JOIN‚Ì—áz
+#standardSQL
+SELECT race, participants.name
+FROM racing.race_results
+CROSS JOIN
+race_results.participants # Š®‘S‚È STRUCT –¼
+
+ã‹L‚Ì‚æ‚¤‚ÉSTRUCT‚ÌƒtƒB[ƒ‹ƒh‚¦‚¨CROSS JOIN‚Éw’è‚·‚é‚±‚Æ‚ÅÀŒ»‰Â”\
+
+*/
+
+
