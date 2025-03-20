@@ -11,7 +11,7 @@
 #### [資格・BADGE]
 - 2022年2月：AWS Certified Cloud Practitioner 認定
   （以下Google Cloudの取得BADGE）
-- 2025年2月：Introduction to Data Engineering on Google Cloud
+- 2025年3月：Introduction to Data Engineering on Google Cloud
 - 2025年3月：Modernizing Data Lakes and Data Warehouses with Google Cloud
 
 #### [DAYxxx_larning_list]
