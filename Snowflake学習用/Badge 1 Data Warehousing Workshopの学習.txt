@@ -46,6 +46,19 @@ SYSADMINロールは、データベースやウェアハウス、テーブル、ビューなどの管理に使われ
 組織的な役割（ORGADMIN）:
 
 ORGADMINロールは、Snowflakeアカウントの新規作成や高度な構成を管理するために非常に強力な権限を持っています。ORGADMINは主にアカウント管理を行う役割です。
+
+
+<ACCOUNTADMINと同じツリーにあるもの>
+ACCOUNTADMIN と同じツリーまたはチャートにある役割は以下の通りです：
+
+SYSADMIN
+→ 同じツリーにあります。SYSADMINはACCOUNTADMINと同じレベルであり、重要な管理ロールです。
+
+SECURITYADMIN
+→ 同じツリーにあります。SECURITYADMINもACCOUNTADMINの上位に位置する役割です。
+
+USERADMIN
+→ 同じツリーにあります。USERADMINはACCOUNTADMINと同じレベルであり、ユーザーの管理に関わります。
 */
 
 
