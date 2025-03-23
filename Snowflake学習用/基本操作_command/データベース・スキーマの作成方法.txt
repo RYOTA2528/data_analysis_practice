@@ -33,3 +33,11 @@ CREATE SCHEMA <スキーマ名> WITH OWNER = SYSADMIN;
 
 CREATE SCHEMA <データベース名>.<スキーマ名>;
 これで、スキーマを作成する準備が整います！
+
+
+SHOW SCHEMAS IN DATABASE <データベース名>;
+これで、特定のデータベースのスキーマを確認可能
+
+
+SHOW SCHEMAS IN ACCOUNT;
+これで現在のロールに基づいてすべてのスキーマを見ることが可能
