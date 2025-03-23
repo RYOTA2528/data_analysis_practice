@@ -101,3 +101,19 @@ ALTER SCHEMA PUBLIC SET OWNER = ROLE SYSADMIN;
 すべてが設定されたら、手順を完了としてマークできます。
 
 この手順で、SYSADMINロールがPUBLICスキーマを表示および使用できるようになります。
+
+
+
+/*
+【ウェアハウスを SYSADMIN が利用できるようにする 】
+この課題では、COMPUTE_WHというウェアハウスの所有権をSYSADMINロールに譲渡する方法について説明します。
+これにより、SYSADMINロールがCOMPUTE_WHウェアハウスを利用できるようになります。
+
+＜コマンドでの実行方法＞
+ウェアハウスの所有権をSYSADMINに変更
+GRANT OWNERSHIPコマンドを使用して、COMPUTE_WHウェアハウスの所有権をSYSADMINロールに譲渡します。これにより、SYSADMINロールがウェアハウスを管理できるようになります。
+
+GRANT OWENERSHIP ON WAREHOUSE COMPUTE_WH TO ROLE SYSADMIN; 
+
+
+*/
