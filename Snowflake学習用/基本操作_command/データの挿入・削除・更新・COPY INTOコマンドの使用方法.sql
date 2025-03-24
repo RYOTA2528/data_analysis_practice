@@ -34,3 +34,10 @@ WHERE ROOT_DEPTH_ID = 8;
 /*データの更新*/
 update ROOT_DEPTH set ROOT_DEPTH_ID = 9
 where ROOT_DEPTH_ID = 5;
+
+
+
+/*データのロードを重複して行ってしまったときのテーブル内の削除*/
+TRUNCATE TABLE GARDEN_PLANTS.VEGGIES.VEGETABLE_DETAILS;
+
+
