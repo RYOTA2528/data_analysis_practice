@@ -93,12 +93,30 @@ USE ROLE accountadmin;
 
 -- GRADER 関数の作成
 CREATE OR REPLACE EXTERNAL FUNCTION util_db.public.grader(
-  step VARCHAR,
-  actual BOOLEAN,
-  actual_int INT,
-  expected_int INT,
-  description VARCHAR
-) RETURNS VARIANT
+      step VARCHAR
+    , passed boolean
+    , actual integer
+    , expected integer
+    , description varchar)
+  RETURNS VARIANT
   API_INTEGRATION = dora_api_integration
   CONTEXT_HEADERS = (CURRENT_TIMESTAMP, CURRENT_ACCOUNT, CURRENT_STATEMENT, CURRENT_ACCOUNT_NAME)
   URL = 'https://awy6hshxy4.execute-api.us-west-2.amazonaws.com/dev/edu_dora/grader';
+
+
+-- GRADER関数を使用して、動作確認を行う
+SELECT 
+    grader(step, 
+           (actual = expected), 
+           actual, 
+           expected, 
+           description) AS graded_results 
+FROM
+(
+  -- テストデータを選択し、GRADER関数に渡す
+  SELECT 
+    'DORA_IS_WORKING' AS step,       -- ステップ名（テスト用の名前）
+    (SELECT 123) AS actual,          -- 実際の結果（ここでは単に数字123を返す）
+    123 AS expected,                 -- 期待される結果（同じく123）
+    'Dora is working!' AS description -- 説明（動作確認のメッセージ）
+);
