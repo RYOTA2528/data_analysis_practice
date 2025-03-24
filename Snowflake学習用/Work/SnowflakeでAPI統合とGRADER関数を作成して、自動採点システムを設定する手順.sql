@@ -120,3 +120,8 @@ FROM
     123 AS expected,                 -- 期待される結果（同じく123）
     'Dora is working!' AS description -- 説明（動作確認のメッセージ）
 );
+
+
+
+-- 元のスキーマで作業していた場合は以下でリネームすること
+ALTER FUNCTION GARDEN_PLANTS.VEGGIE.GRADER RENAME TO UTIL_DB.PUBLIC.GRADER 
