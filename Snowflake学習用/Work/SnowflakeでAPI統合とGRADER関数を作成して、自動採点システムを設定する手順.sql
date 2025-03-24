@@ -125,3 +125,8 @@ FROM
 
 -- 元のスキーマで作業していた場合は以下でリネームすること
 ALTER FUNCTION GARDEN_PLANTS.VEGGIE.GRADER RENAME TO UTIL_DB.PUBLIC.GRADER 
+
+
+-- garden_plantsDBの全スキーマを確認
+select * 
+from garden_plants.information_schema.schemata;
