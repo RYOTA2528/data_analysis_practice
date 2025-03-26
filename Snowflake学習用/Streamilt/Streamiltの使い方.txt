@@ -1,0 +1,42 @@
+# Import python packages
+import streamlit as st
+from snowflake.snowpark.context import get_active_session
+
+# Write directly to the app
+st.title(":apple: Uncle Yers Fruit Details :apple:")
+st.write("Streamiltのテスト:")　解説
+
+
+# Get the current credentials
+session = get_active_session()
+
+
+fn = st.text_input('Fruit Name:')
+rdc = st.selectbox('Root Depth:', ('S','M','D'))
+
+
+ーーーーー
+【解説】
+コードの解説:
+Streamlitのインポート:
+
+import streamlit as st: Streamlitをインポートして、アプリのUIを作成します。
+
+from snowflake.snowpark.context import get_active_session: Snowflakeから現在のセッションを取得するためにインポートしています。このセッションを使ってデータベースとやり取りができます。
+
+Streamlit UI要素:
+
+st.title(":apple: Uncle Yers Fruit Details :apple:"): アプリのタイトルを設定しています。絵文字を使って楽しくしています。
+
+st.write("Streamlitのテスト:"): "Streamlitのテスト"という日本語のテキストを表示しています。
+
+st.text_input('Fruit Name:'): ユーザーに果物の名前を入力させるテキスト入力ボックスです。
+
+st.selectbox('Root Depth:', ('S','M','D')): ユーザーに根の深さを選択させるドロップダウンメニューです。選択肢は「S」「M」「D」です。
+
+次にできること:
+他の入力フィールドを追加: 果物の色や味、成長速度など、他の属性を入力するためのフィールドを追加できます。
+
+結果の表示: ユーザーがデータを入力した後に、そのデータを表示したり、計算や分析を行ったりすることができます。
+
+Snowflakeとの連携: sessionを使って、Snowflakeのデータベースから果物の情報を取得したり、保存したりできます。
