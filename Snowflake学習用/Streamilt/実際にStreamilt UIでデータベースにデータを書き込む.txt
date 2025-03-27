@@ -1,0 +1,28 @@
+# Import python packages
+import streamlit as st
+from snowflake.snowpark.context import get_active_session
+
+# Write directly to the app
+st.title(":apple: Uncle Yers Fruit Details :apple:")
+st.write("Streamiltのテスト:")
+
+
+# Get the current credentials
+session = get_active_session()
+
+
+fn = st.text_input('Fruit Name:')
+rdc = st.selectbox('Root Depth:', ('S','M','D'))
+sql_insert = 'insert into garden_plants.fruits.fruit_details select \''+fn+'\' ,\''+rdc+'\''
+# if st.button('Submit'):
+#     st.write('Fruit Name entered is' + fn)
+#     st.write('Root Depth Code chosen is' + rdc)
+
+
+# 実際にデータベースにデータを書き込む準備をする
+if st.button('Submit'):
+    st.write('Fruit Name entered is' + fn)
+    st.write('Root Depth Code chosen is' + rdc)
+    # st.write(sql_insert)
+    result = session.sql(sql_insert) #この結果、insert成功時の出力が表示される
+    st.write(result)
