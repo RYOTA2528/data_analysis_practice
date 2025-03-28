@@ -2,6 +2,34 @@
 【stageへのupload方法】
 テーブル右上の作成ボタン→ステージを押下→Snowflakeによる管理→暗号化を「サーバー側での暗号化」
 これ対象スキーマ配下にステージが出現
+（ここではmy_internal_stageというstageを作成）
 */
 
+
+/*【補足】
+ステージは S3 バケットと呼ばれる AWS ストレージ領域に基づいています。Snowflake アカウントが Azure リージョンにある場合、ステージは Azure Blob にあります。同様に、GCP ベースの Snowflake アカウントには、GCP バケット内にステージング領域があります。 
+*/
+
+
+-- テーブルを作成
+CREATE OR REPLACE TABLE vegetable_details_soil_type
+(plant_name varchar(25)
+,soil_type number(1,0)
+);
+
+
+-- ファイル形式を作成する
+create file format garden_plants.veggies.PIPECOLSEP_ONEHEADEROW
+type = 'CSV' field_delimiter = '|' skip_header = 1;
+
+-- stageへのコピーを実行
+COPY INTO vegetable_details_soil_type
+from @util_db.public.my_internal_stage
+files = ('VEG_NAME_TO_SOIL_TYPE_PIPE.txt')
+file_format = (format_name=garden_plants.veggies.PIPECOLSEP_ONEHEADEROW);
+
+-- 結果を確認
+select
+*
+from util_db.public.vegetable_details_soil_type;
 
