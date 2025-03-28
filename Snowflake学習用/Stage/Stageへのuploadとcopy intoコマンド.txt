@@ -43,3 +43,13 @@ garden_plants.veggies.COMMASEP_DBLQUOT_ONEHEADROW
     SKIP_HEADER = 1  -- 1行目はヘッダ行としてスキップします
     FIELD_OPTIONALLY_ENCLOSED_BY = '"'  -- 値の中にカンマが含まれている場合、ダブルクオーテーションで囲む
     ;
+
+-- stage内のuploadしたデータの確認
+-- ファイル内のデータ (ファイル形式は指定されていません) 
+select $1 
+from @util_db.public.my_internal_stage/LU_SOIL_TYPE.tsv;
+
+--実際に先ほどのファイル形式を適用
+select $1, $2, $3
+from @util_db.public.my_internal_stage/LU_SOIL_TYPE.tsv
+(file_format => garden_plants.veggies.COMMASEP_DBLQUOT_ONEHEADROW);
