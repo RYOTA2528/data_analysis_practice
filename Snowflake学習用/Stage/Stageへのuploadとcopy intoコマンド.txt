@@ -39,7 +39,7 @@ from util_db.public.vegetable_details_soil_type;
 create file format
 garden_plants.veggies.COMMASEP_DBLQUOT_ONEHEADROW
     TYPE = 'CSV'  -- CSV形式のカンマ区切りファイル
-    FIELD_DELIMITER = ','  -- 各列はカンマで区切られます
+    FIELD_DELIMITER = '\t'  -- 各列はカンマで区切られます
     SKIP_HEADER = 1  -- 1行目はヘッダ行としてスキップします
     FIELD_OPTIONALLY_ENCLOSED_BY = '"'  -- 値の中にカンマが含まれている場合、ダブルクオーテーションで囲む
     ;
