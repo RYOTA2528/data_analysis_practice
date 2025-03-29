@@ -29,3 +29,17 @@ select * from author_ingest_json;
 
 //raw_authorのデータを確認
 select raw_author from author_ingest_json;
+
+
+// 半構造体の属性情報からAUTHOR_UID値を返します
+select raw_author:AUTHOR_UID
+from author_ingest_json;
+
+
+// 正規化されたテーブルのような形式でデータを返します
+select
+ raw_author:AUTHOR_UID
+,raw_author:FIRST_NAME::STRING as FIRST_NAME
+,raw_author:MIDDLE_NAME::STRING as MIDDLE_NAME
+,raw_author:LAST_NAME::STRING as LAST_NAME
+FROM AUTHOR_INGEST_JSON;
