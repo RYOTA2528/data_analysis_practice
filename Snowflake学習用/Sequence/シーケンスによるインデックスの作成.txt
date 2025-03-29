@@ -1,0 +1,18 @@
+/*【シーケンスとは？】
+SEQ_AUTHOR_UID という名前のシーケンスを作成するためのものです。シーケンスは、通常、データベース内で自動的に一意の番号を生成するために使用されます。特に、自動インクリメントするプライマリーキーや識別子（UID）などを生成する際に役立ちます。
+*/
+
+-- シーケンスは著者ID（AUTHOR_UID）用のシーケンスであることがわかります。
+create sequence SEQ_AUTHOR_UID
+    start = 1
+    increment = 1
+    ORDER --これが指定されていない場合、シーケンスの番号は順不同で生成
+    comment = 'Use this to fill in AUTHOR_UID';
+    
+    
+/*【使用例】
+シーケンスを使用すると、次のようにデータベースで自動的に一意のIDを生成できます。
+例えば、AUTHOR_UID を Authors テーブルに挿入する場合は、次のようにシーケンスを使って自動的にIDを挿入できます。
+*/    
+INSERT INTO Authors (AUTHOR_UID, FirstName, LastName)
+VALUES (SEQ_AUTHOR_UID.NEXTVAL, 'John', 'Doe');
