@@ -38,5 +38,33 @@ values
 
 // 結果上記3番目から挿入される。以前、テーブルに最初の 2 行を追加したとき、行 UID として 1 と 2 をハードコードしました。今回は、.nextval 関数を使用して UID を追加します。これは、どの番号だったかを覚えておく必要がないため、将来的にはより適切に機能します。 
 
-自動インクリメント プロパティの場合と同じように、テーブル定義の一部としてシーケンスを使用することもできます。その場合は、その列のデフォルト値をseq_author_uid.nextval()として定義できます。この場合は、最初からやり直したくなかったので、代わりに挿入ステートメントで関数を使用しました。 
+自動インクリメント プロパティの場合と同じように、テーブル定義の一部としてシーケンスを使用することもできます。その場合は、その列のデフォルト値をseq_author_uid.nextval()として定義できます。この場合は、最初からやり直したくなかったので、代わりに挿入ステートメントで関数を使用しました。
+
+
+// 多対多テーブルでシーケンスを活用した演習
+//中間テーブルの作成
+create table book_to_author
+( book_uid number
+  ,author_uid number
+);
+
+// リレーションシップの行を挿入します
+insert into book_to_author(book_uid, author_uid) values 
+ (1,1)   // この行は 2001 年の書籍を Fiona Macdonald にリンクします
+,(1,2)   // この行は 2001 年の書籍を Gian Paulo Faleschini にリンクします
+,(2,3)   // 2006 年の書籍を Laura K Egendorf にリンクします
+,(3,4)   // 2008 年の書籍を Jan Grover にリンクします
+,(4,5)   // 2016 年の書籍を Jennifer Clapp にリンクします
+,(5,6); // 2015 年の書籍を Kathleen Petelinsek にリンクします
+
+// 3 つのテーブルを結合して作業を確認します
+// 著者ごとに 1 行が取得されます
+
+// 結合(JOINの挙動はINNER JOINと類似)
+select * 
+from book_to_author ba 
+join author a 
+on ba.author_uid = a.author_uid 
+join book b 
+on b.book_uid=ba.book_uid; 
 
