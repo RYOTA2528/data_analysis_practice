@@ -28,3 +28,13 @@
 ↓
 成功すると10分ほどでデータは複製されます
 
+
+
+【共有元でセキュアビューを設定してみる】
+-- 「通常の」ビューをセキュアビューに変換する
+alter view intl_db.public.NATIONS_SAMPLE_PLUS_ISO
+set secure;
+
+alter view intl_db.public.SIMPLE_CURRENCY
+set secure; 
+
