@@ -16,7 +16,7 @@ ESCAPE_UNENCLOSED_FIELD = NONE; --囲まれていないフィールド内のエスケープ文字を無
 
 -- ストレージ統合を使用し外部ステージを作成
 create stage s3_access_logs
-  url = 's3://<BUCKET_NAME>/<PREFIX>/'
+  url = 's3://<BUCKET_NAME>/<PREFIX>/' --STORAGE INTEGRATION で許可した STORAGE_ALLOWED_LOCATIONS と一致している必要があります。ズレてるとエラーになります
   storage_integration = s3_int_s3_access_logs --以前 CREATE STORAGE INTEGRATION で作成した統合名を指定。これで IAM ロールとの接続を使用
 ;
 
