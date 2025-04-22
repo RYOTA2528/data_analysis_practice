@@ -31,3 +31,15 @@ SQS キュー ARN: SHOW PIPES 出力から SQS キュー名を貼り付けます。
 イベント通知が作成されました
 */
 
+
+// Snowpipeを更新してファイルを取得します
+
+alter pipe s3_access_logs_pipe refresh;
+
+
+// スノーパイプが正常に動作したかどうかも確認できます
+select *
+  from table(snowflake.information_schema.pipe_usage_history(
+    date_range_start=>dateadd('day',-14,current_date()),
+    date_range_end=>current_date(),
+    pipe_name=>'public.s3_access_logs_pipe));
