@@ -13,6 +13,8 @@ create STORAGE INTEGRATION s3_int_s3_access_logs
 
 
 
+DESC INTEGRATION;
+
   //（補足）そもそも「ARN」って何？
   -- ARN（Amazon Resource Name） は AWS 内のリソース（ユーザー、ロール、バケットなど）を一意に識別するための名前。
 
@@ -21,8 +23,11 @@ create STORAGE INTEGRATION s3_int_s3_access_logs
 
 
 
-/*IAMポリシーの例*/
-
+/*
+SnowflakeS3AccessRoleというIAMロール(信頼ポリシー・アクセス許可ポリシーの２つ)の設定例
+*/
+/* IAMロールの「信頼ポリシー（Trust Policy）」の例*/
+-- Snowflake がロールを引き受けられるように設定する。
 /*
 {
   "Version": "2012-10-17",
@@ -43,3 +48,27 @@ create STORAGE INTEGRATION s3_int_s3_access_logs
 }
 
 */
+
+/*
+「IAMロールの「アクセス許可ポリシー（Permissions Policy）」の例」
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowS3ReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::<BUCKET_NAME>",
+        "arn:aws:s3:::<BUCKET_NAME>/<PREFIX>/*"
+      ]
+    }
+  ]
+}
+
+*/
+
+
