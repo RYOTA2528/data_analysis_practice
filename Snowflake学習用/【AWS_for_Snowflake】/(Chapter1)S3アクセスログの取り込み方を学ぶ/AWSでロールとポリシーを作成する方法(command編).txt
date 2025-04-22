@@ -1,0 +1,70 @@
+【AWSでロールとポリシーを作成する方法(command編)】
+
+ステップ①：AWS CLIにて以下を入力
+export BUCKET_NAME='<BUCKET_NAME>'
+export PREFIX='<PREFIX>' # no leading or trailing slashes
+export ROLE_NAME='<ROLE_NAME>'
+export STORAGE_AWS_IAM_USER_ARN='<STORAGE_AWS_IAM_USER_ARN>' --先ほどメモしたもの
+export STORAGE_AWS_EXTERNAL_ID='<STORAGE_AWS_EXTERNAL_ID>' --先ほどメモしたもの
+
+
+ステップ②：Snowflakeが引き受ける役割を作成する
+aws iam create-role \
+    --role-name "${ROLE_NAME}" \
+    --assume-role-policy-document \
+'{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "'${STORAGE_AWS_IAM_USER_ARN}'"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "sts:ExternalId": "'${STORAGE_AWS_EXTERNAL_ID}'"
+                }
+            }
+        }
+    ]
+}'
+
+
+ステップ③：スノーフレークがS3にファイルを追加したり削除したりできるようにインラインポリシーを作成する
+aws iam put-role-policy \
+    --role-name "${ROLE_NAME}" \
+    --policy-name "${ROLE_NAME}-inlinepolicy" \
+    --policy-document \
+'{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+              "s3:PutObject",
+              "s3:GetObject",
+              "s3:GetObjectVersion",
+              "s3:DeleteObject",
+              "s3:DeleteObjectVersion"
+            ],
+            "Resource": "arn:aws:s3:::'${BUCKET_NAME}'/'${PREFIX}'/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": "arn:aws:s3:::'${BUCKET_NAME}'",
+            "Condition": {
+                "StringLike": {
+                    "s3:prefix": [
+                        "'${PREFIX}'/*"
+                    ]
+                }
+            }
+        }
+    ]
+}'
