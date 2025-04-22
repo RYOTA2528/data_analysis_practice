@@ -28,3 +28,11 @@ LIST @s3_access_logs;
 COPY INTO @s3_access_logs/my_output.csv
 FROM my_table
 FILE_FORMAT = (TYPE = CSV);
+
+
+-- 生のログを保存するテーブルを作成
+create or replace table s3_access_logs_staging(
+  raw TEXT,
+  timestamp DATETIME
+);
+
