@@ -13,8 +13,9 @@ create STORAGE INTEGRATION s3_int_s3_access_logs
 
 
 
-DESC INTEGRATION;
-
+DESC INTEGRATION s3_int_s3_access_logs;
+-- STORAGE_AWS_IAM_USER_ARN
+-- STORAGE_AWS_EXTERNAL_IDをメモ
   //（補足）そもそも「ARN」って何？
   -- ARN（Amazon Resource Name） は AWS 内のリソース（ユーザー、ロール、バケットなど）を一意に識別するための名前。
 
