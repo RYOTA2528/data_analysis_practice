@@ -36,3 +36,15 @@ create or replace table s3_access_logs_staging(
   timestamp DATETIME
 );
 
+
+-- 変更を追跡するためにテーブルにストリームを作成
+create stream s3_access_logs_stream on table s3_access_logs_staging;
+
+
+-- 実際に外部ステージからS3アクセスログをテスト注入
+copy into s3_access_logs_staging from (
+select
+  STG.$1,
+  current_timestamp() as timestamp
+from @s3_access_logs(FILE_FORMAT => TEXT_FORMAT) STG
+)
