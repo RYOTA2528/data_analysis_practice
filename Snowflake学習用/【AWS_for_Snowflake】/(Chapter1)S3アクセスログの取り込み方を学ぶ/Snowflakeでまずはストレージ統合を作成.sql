@@ -30,12 +30,12 @@ create STORAGE INTEGRATION s3_int_s3_access_logs
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::<SNOWFLAKE_ACCOUNT_ID>:root"
+        "AWS": "arn:aws:iam::<SNOWFLAKE_ACCOUNT_ID>:root" --Snowflakeの指定アカウントにのみAssumeRoleを許可する
       },
-      "Action": "sts:AssumeRole",
+      "Action": "sts:AssumeRole",　-- 一時的に引き受けて（AssumeRole）AWSリソースにアクセスできるようにする設定
       "Condition": {
         "StringEquals": {
-          "sts:ExternalId": "<SnowflakeExternalId>"
+          "sts:ExternalId": "<SnowflakeExternalId>" --外部ID（ExternalId）が一致する場合にのみ許可
         }
       }
     }
