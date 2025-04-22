@@ -12,3 +12,19 @@ TYPE = 'CSV'
 FIELD_DELIMITER = NONE --区切り文字を使わない（','が多い）
 SKIP_BLANK_LINES = TRUE --空行はスキップする
 ESCAPE_UNENCLOSED_FIELD = NONE; --囲まれていないフィールド内のエスケープ文字を無効にする
+
+
+-- ストレージ統合を使用し外部ステージを作成
+create stage s3_access_logs
+  url = 's3://<BUCKET_NAME>/<PREFIX>/'
+  storage_integration = s3_int_s3_access_logs --以前 CREATE STORAGE INTEGRATION で作成した統合名を指定。これで IAM ロールとの接続を使用
+;
+
+-- 外部ステージの中身を確認
+LIST @s3_access_logs;
+
+
+-- (おまけ)データを書き出し（Snowflake → S3）方法
+COPY INTO @s3_access_logs/my_output.csv
+FROM my_table
+FILE_FORMAT = (TYPE = CSV);
