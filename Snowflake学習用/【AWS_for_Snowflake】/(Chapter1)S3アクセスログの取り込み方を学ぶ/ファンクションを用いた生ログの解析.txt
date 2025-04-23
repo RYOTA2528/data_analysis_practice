@@ -1,0 +1,29 @@
+/*
+生のデータが
+ Snowflake にロードされたため生のログを解析してクリーンアップするためのカスタム Python 関数を作成します。
+*/
+create or replace function parse_s3_access_logs(log STRING)
+returns table (
+    bucketowner STRING,bucket_name STRING,requestdatetime STRING,remoteip STRING,requester STRING,
+    requestid STRING,operation STRING,key STRING,request_uri STRING,httpstatus STRING,errorcode STRING,
+    bytessent BIGINT,objectsize BIGINT,totaltime STRING,turnaroundtime STRING,referrer STRING, useragent STRING,
+    versionid STRING,hostid STRING,sigv STRING,ciphersuite STRING,authtype STRING,endpoint STRING,tlsversion STRING)
+language python
+runtime_version=3.8
+handler='S3AccessLogParser'
+as $$
+import re
+class S3AccessLogParser:
+    def clean(self,field):
+        field = field.strip(' " " ') --" " で囲まれているフィールドを除去('  "hello"  '.strip(' " " ') → 'hello')
+        if field == '-': -- - はログの「空」表現なので None に変換
+            field = None
+        return field
+        
+    def process(self, log):
+        pattern = '([^ ]*) ([^ ]*) \\[(.*?)\\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (\"[^\"]*\"|-) (-|[0-9]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (\"[^\"]*\"|-) ([^ ]*)(?: ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*))?.*$'-- AWS S3 アクセスログの1行を24個のフィールドに分割するための正規表現
+        lines = re.findall(pattern,log,re.M) --re.M → 複数行を対象にする（改行ごとに処理）,findall() → ログの中でパターンに一致する全行を抽出して、リスト化（各要素はタプル）
+        
+        for line in lines:
+            yield(tuple(map(self.clean,line))) --map(self.clean, line) → 各フィールドを clean() 関数に通して整形（例："-" を None に）,yield → 結果を1行ずつ返す（→ テーブル関数で1行ずつ出力）(map() の結果（イテレータ）をタプルに変換して、1行のデータとして整える。)
+$$;
