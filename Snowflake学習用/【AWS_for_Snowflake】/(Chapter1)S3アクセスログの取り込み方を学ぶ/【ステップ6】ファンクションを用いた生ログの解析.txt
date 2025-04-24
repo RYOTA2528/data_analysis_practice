@@ -27,3 +27,39 @@ class S3AccessLogParser:
         for line in lines:
             yield(tuple(map(self.clean,line))) --map(self.clean, line) → 各フィールドを clean() 関数に通して整形（例："-" を None に）,yield → 結果を1行ずつ返す（→ テーブル関数で1行ずつ出力）(map() の結果（イテレータ）をタプルに変換して、1行のデータとして整える。)
 $$;
+
+
+
+-- 解析機能をテスト
+select parsed_logs.*
+    from s3_access_logs_staging
+    join table(parse_s3_access_logs(s3_access_logs_staging.raw)) parsed_logs;
+    
+    
+-- 解析されたログを保持するテーブルを作成
+create or replace table s3_access_logs(
+ bucketowner STRING,bucket_name STRING,requestdatetime STRING,remoteip STRING,requester STRING,
+    requestid STRING,operation STRING,key STRING,request_uri STRING,httpstatus STRING,errorcode STRING,
+    bytessent BIGINT,objectsize BIGINT,totaltime STRING,turnaroundtime STRING,referrer STRING, useragent STRING,
+    versionid STRING,hostid STRING,sigv STRING,ciphersuite STRING,authtype STRING,endpoint STRING,tlsversion STRING
+);
+
+
+
+/*
+イメージしやすいように以下のようなログがS3には保存されてる
+79a1234e4a my-bucket [23/Apr/2025:07:12:00 +0000] 192.0.2.1 - 3C42EXAMPLE REST.GET.OBJECT logs/file.log "GET /logs/file.log HTTP/1.1" 200 - 1024 1024 10 5 "-" "Mozilla/5.0" - hostid sigv TLSv1.2 TLS_AES_128_GCM_SHA256 AuthType endpoint TLSv1.2
+
+
+このログを関数に通すと以下のようになる
+
+bucketowner	bucket_name	requestdatetime	remoteip	requester	...	httpstatus	bytessent	useragent	tlsversion
+79a1234e4a	my-bucket	23/Apr/2025:...	192.0.2.1	(null)	...	200	1024	Mozilla/5.0	TLSv1.2
+
+"GET /logs/file.log HTTP/1.1" → request_uri に
+
+"-" → NULL に変換（← clean() 関数で）
+
+"Mozilla/5.0" → クォート削除されて useragent に入る
+
+*/
