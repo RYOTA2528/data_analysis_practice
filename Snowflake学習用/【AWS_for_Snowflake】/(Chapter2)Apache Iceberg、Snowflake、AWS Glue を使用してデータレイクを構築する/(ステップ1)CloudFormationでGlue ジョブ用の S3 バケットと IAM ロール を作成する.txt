@@ -1,0 +1,58 @@
+【CloudFormation手順】
+「スタックを作成」ボタンをクリック
+↓
+テンプレートを準備 > 既存のテンプレートを選択
+テンプレートソース > Amazon S3 URL
+↓
+以下のURLを添付（https://snowflake-corp-se-workshop.s3.us-west-1.amazonaws.com/VHOL_Iceberg_SNOW_AWS/setup/glue-snflk-devday-v1.3.yaml）中身を解説
+
+
+※Glue ジョブ用の S3 バケットと IAM ロール を作成する
+
+Resources:
+  # S3バケットの作成
+  S3bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      # バケット名にアカウントIDを埋め込む
+      BucketName: !Sub glue-snowflake-lab-${AWS::AccountId}
+
+  # AWS Glue 用の IAM ロールを作成
+  GlueSnowflakeLabRole:
+    Type: AWS::IAM::Role
+    Properties:
+      # ロールを誰が引き受けられるかのポリシー（Glueサービスに許可）
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - glue.amazonaws.com
+
+      # IAMロールに付与するマネージドポリシー
+      ManagedPolicyArns:
+        # S3へのフルアクセスを許可
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        # Glueのサービスロール（Glueの実行に必要）
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+        # Glueコンソールのフルアクセス（設定などを行うため）
+        - arn:aws:iam::aws:policy/AWSGlueConsoleFullAccess
+Outputs:
+  # 出力：作成したS3バケットの名前
+  S3BucketName:
+    Description: S3 Bucket Name
+    Value: !Sub 'glue-snowflake-lab-${AWS::AccountId}'
+
+  # 出力：作成したGlue用IAMロールのリソース参照
+  GlueIAMRole:
+    Description: IAM Role for Glue Snowflake Workshop
+    Value:
+      Ref: GlueSnowflakeLabRole
+
+
+次の画面でスタックの詳細を指定し、スタック名にスタックの名前を入力します。この場合は、 を使用できますglue-snowflake。次に、次へをクリックします。
+次の画面でスタックオプションを構成し、 [次へ]をクリックします。
+最後の画面「確認と作成」で一番下までスクロールし、横にあるチェックボックスをオンにして「送信」
