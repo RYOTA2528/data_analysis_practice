@@ -12,3 +12,7 @@ insert into s3_acess_logs(
  join table(parse_s3_access_logs(s3_access_logs_stream.raw)) parsed_logs --parse_s3_access_logs() 関数で構造化
  where s3_access_logs_stream.metadata$action = 'INSERT' --新しく挿入されたデータだけを対象にする
 );
+
+--タスクのリロードを実施
+alter task s3_access_logs_transformation resume;
+
