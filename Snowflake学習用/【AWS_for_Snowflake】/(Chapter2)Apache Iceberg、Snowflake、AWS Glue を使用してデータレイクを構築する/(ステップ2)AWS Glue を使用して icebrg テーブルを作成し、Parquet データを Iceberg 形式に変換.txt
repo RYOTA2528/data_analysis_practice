@@ -1,0 +1,85 @@
+【Glue上での操作】
+
+（ステップ①：Create Glue Database）
+・左側のナビゲーション ペインの[データ カタログ]で、 [データベース]をクリックします。
+・右側のペインのウィンドウで「データベースの追加」をクリック
+・[データベースの作成] タブで、新しいデータベースの名前を入力しiceberg
+[データベースの作成]をクリック
+
+（ステップ②：Create Glue Table）
+Glueコンソールの左側のメニューで、データカタログ > データベース > テーブルをクリックします。
+次に「テーブルを追加」をクリック
+↓
+（次のようにテーブルプロパティを設定）
+名前: quotes
+データベース: iceberg
+表形式: Apache Iceberg table
+データの場所: s3://glue-snowflake-lab-xxxx/iceberg/quotes/
+↓
+「スキーマをJSONとして編集」を選択してスキーマを選択または定義します
+↓
+[
+  {
+    "Name": "UUID",
+    "Type": "varchar(100)",
+    "Comment": ""
+  },
+  {
+    "Name": "BATCHID",
+    "Type": "varchar(32)",
+    "Comment": ""
+  },
+  {
+    "Name": "QUOTE_PRODUCT",
+    "Type": "varchar(100)",
+    "Comment": ""
+  },
+  {
+    "Name": "QUOTEDATE",
+    "Type": "date",
+    "Comment": ""
+  },
+.
+.
+.
+省略
+   ]
+↓
+作成
+
+
+（ステップ③：Glue ETLジョブの作成）
+・ETL ジョブの下の左側のメニュー ペインにあるVisual ETLリンクをクリックし、Visual ETL ボタンをクリック
+ジョブの名前を「無題ジョブ」から「Quotes - Raw to Iceberg」に変更します
+[ジョブの詳細]タブに移動し、cloudformation テンプレートによって作成されたIAM ロールを選択し
+↓
+保存
+↓
+[ビジュアル] タブをクリックし、+ボタンを展開して、ソース ノード S3 を追加
+↓
+以下のように設定
+名前:引用 - 生
+S3 URL: S3ソースURLを に設定しますs3://aws-data-analytics-workshops/aws_glue/glue-snowflake/raw-data/quotes/。これは、生の引用ファイルが存在するパブリックバケットです。
+データ形式: Parquet
+↓
+Quotes-Rawノードを選択したまま、 +ボタンを展開し、単純な変換-スキーマの変更を追加
+↓
+ノードの親が Quotes-Parquet S3 ノードである Change Schema Transform がキャンバスに追加されます。
+↓
+Quotes-parquetをAmazon S3にIceberg形式で保存していきます。まずは。「スキーマの変更」を選択し、 「ターゲット」タブでAmazon S3を検索して見つけ、キャンバスに追加
+Amazon S3ターゲットノードが選択されている場合
+Amazon S3の名前をQuotesに変更- Iceberg
+フォーマットをApache Icebergに設定する
+圧縮タイプをSnappyに設定する
+S3ターゲットロケーションをs3://glue-snowflake-lab-xxxx/iceberg/quotes/に設定してください。バケットは事前にプロビジョニングされています。「S3を参照」ボタンを使用して、S3バケットとフォルダを指定できます。
+7データカタログの更新オプションで、「データカタログにテーブルを作成し、以降の実行では既存のスキーマを保持して新しいパーティションを追加する」を選択
+データベースとしてiceberg を選択
+テーブル名を引用符で囲む
+↓
+右上の「保存」ボタンを使ってジョブを保存します。
+
+※これで、Glue ジョブを実行して、生の parquet ファイルを変換し、Iceberg テーブルとして保存できるようになりました。
+
+
+↓
+Glue Studio を使用して、paruqet ファイルから AWS アカウントに Iceberg テーブルを正常に作成しました。
