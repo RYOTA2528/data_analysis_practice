@@ -118,6 +118,9 @@ CREATE or REPLACE CATALOG INTEGRATION HOL_ICE_GLUE_CAT_INT
   GLUE_AWS_ROLE_ARN = 'arn:aws:iam::<あなたの AWS アカウント ID>:role/<作成したロール名>',
   GLUE_CATALOG_ID = '<あなたの AWS アカウント ID>',
   ENABLED = TRUE;
+  
+-- ※これでSnowflake内からこのカタログインテグレーションを利用して、
+--   Glue上のIcebergテーブルに対してクエリを実行したり、仮想データベースとして参照できるようになります。
 
 -- Glue カタログ統合の確認
 DESC CATALOG INTEGRATION HOL_ICE_GLUE_CAT_INT;
