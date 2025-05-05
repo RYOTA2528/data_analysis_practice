@@ -52,7 +52,7 @@ STORAGE_LOCATIONS出力行には、 次のようなJSON形式のプロパティ値が入ります。
 「信頼関係」タブをクリックし
 AWS IAMにて「信頼ポリシーの編集」をクリックします。先ほどSnowflake上で確認した値を以下の<>に適宜入れながら編集
 ↓
-
+※この時点では①②までの入力※
 /*
 {
   "Version": "2012-10-17",
@@ -126,6 +126,8 @@ CREATE or REPLACE CATALOG INTEGRATION HOL_ICE_GLUE_CAT_INT
 DESC CATALOG INTEGRATION HOL_ICE_GLUE_CAT_INT;
 
 -- ※ Snowflake IAM ユーザー ARN と External ID を使って、IAM ロールの信頼ポリシーを更新する必要があります
+
+※信頼ポリシーの③④の中身の修正
 
 
 /* ---------------------------------------------------------------------------
