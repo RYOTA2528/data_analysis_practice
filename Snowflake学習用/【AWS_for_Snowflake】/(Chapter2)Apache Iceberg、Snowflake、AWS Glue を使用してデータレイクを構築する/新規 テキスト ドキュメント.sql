@@ -113,8 +113,8 @@ AWS IAMにて「信頼ポリシーの編集」をクリックします。先ほどSnowflake上で確認した値
 
 CREATE or REPLACE CATALOG INTEGRATION HOL_ICE_GLUE_CAT_INT
   CATALOG_SOURCE = GLUE,
-  CATALOG_NAMESPACE = 'iceberg',
-  TABLE_FORMAT = ICEBERG,
+  CATALOG_NAMESPACE = 'iceberg', -- Glueの中でSnowflakeが参照する**データベース名（Namespace）**です
+  TABLE_FORMAT = ICEBERG, -- テーブル形式が Apache Iceberg であることを示します。SnowflakeはIceberg形式のテーブルをネイティブにサポートしており、この指定で正しく解釈できます。
   GLUE_AWS_ROLE_ARN = 'arn:aws:iam::<あなたの AWS アカウント ID>:role/<作成したロール名>',
   GLUE_CATALOG_ID = '<あなたの AWS アカウント ID>',
   ENABLED = TRUE;
