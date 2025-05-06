@@ -25,24 +25,20 @@
 
 # snowflake.core の役割
 # snowflake.core モジュールは、各リソースに対する操作を統一的なインターフェースで扱えるようにすることを目的としています。
-
 # ここで言う「イテレーター」は、例えばデータベース一覧やスキーマ一覧などをforループで繰り返し処理できるようなオブジェクトを指します。
 
-# ✅ 主な特徴
+# 主な特徴
 # 機能	内容
 # リソース操作の共通化	データベース・スキーマ・タスクなど、Snowflakeのオブジェクトに共通のAPIインターフェースを提供。
 # オブジェクト一覧取得	.list_*() のような関数で、該当リソースのリストを取得（例：list_databases()）。
 # オブジェクトの作成・削除等	.create_*() や .delete_*() を使ってリソースのライフサイクルを管理。
 # イテレーター形式での取得	Pythonの for ループなどで簡単にリソースを繰り返し処理できる。
 
-# 🔧 例：データベース一覧を取得（擬似コード）
-# python
-# コピーする
-# 編集する
-# from snowflake.core import Root
+#例：データベース一覧を取得（擬似コード）
+from snowflake.core import Root
+root = Root(connection)  # Snowflakeへの接続
+for db in root.databases:
+     print(db.name)
 
-# root = Root(connection)  # Snowflakeへの接続
-# for db in root.databases:
-#     print(db.name)
 # このように、.databases はイテレーターとして機能し、データベース名などにアクセスできます。
 
