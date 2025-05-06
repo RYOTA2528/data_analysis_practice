@@ -1,0 +1,59 @@
+① モジュールのインポート
+from snowflake.snowpark import Session
+
+Session クラスは、Snowflakeに接続するためのオブジェクト。
+接続情報（アカウント、ユーザー名、パスワード、DB名など）を使って、Snowflakeとの接続を確立する役割を持ちます。
+これは Snowpark API の一部です。
+
+from snowflake.core import Root
+Root は Snowflake Python APIのコアクラス。
+
+このクラスを通じて、Snowflake内のリソース（データベース・スキーマ・テーブル・タスクなど）にアクセスできます。
+Root は snowflake.core モジュールのエントリポイント（起点）です。
+
+② セッションを構築して接続
+session = Session.builder.configs(connection_params).create()
+Session.builder: セッションを構成するためのビルダーオブジェクト。
+
+.configs(...): 接続設定（辞書型で account, user, password などを指定）を渡す。
+.create(): 実際にSnowflakeに接続し、セッションを確立。
+
+-------------------------------------------------------------------------
+? connection_params の例
+-------------------------------------------------------------------------
+
+connection_params = {
+    "account": "abc12345.us-east-1",
+    "user": "my_user",
+    "password": "my_password",
+    "role": "SYSADMIN",
+    "warehouse": "COMPUTE_WH",
+    "database": "MY_DB",
+    "schema": "PUBLIC"
+}
+③ Root オブジェクトを作成
+root = Root(session)
+Snowflakeに接続された session を Root クラスに渡すことで、
+
+root.databases
+
+root.schemas
+
+root.tables
+
+root.tasks
+
+root.compute_pools
+
+などのAPIにアクセス可能になります。
+root は、**すべてのSnowflakeリソースへの入り口（ゲートウェイ）**と考えてOKです。
+
+? このコードでできること（例）
+たとえば、データベース一覧を取得：
+
+for db in root.databases:
+    print(db.name)
+    
+または、スキーマを作成：
+
+root.schemas.create("NEW_SCHEMA")
