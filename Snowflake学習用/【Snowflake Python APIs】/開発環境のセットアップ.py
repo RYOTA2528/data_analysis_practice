@@ -50,3 +50,12 @@ from snowflake.core.warehouse import Warehouse  # 仮想ウェアハウス（ク
 connection_params = {
     "connection_name": "default"
 }
+
+------------------------------------------------------------------------------------------------
+④Snowflakeへの接続を確立するには、Snowparkセッションを作成し、引数として connection_params を渡します。
+
+session = Session.builder.configs(connection_params).create()
+
+------------------------------------------------------------------------------------------------
+⑤Root オブジェクトを作成するには、 Root コンストラクターに session オブジェクトを渡します。
+root = Root(session)
