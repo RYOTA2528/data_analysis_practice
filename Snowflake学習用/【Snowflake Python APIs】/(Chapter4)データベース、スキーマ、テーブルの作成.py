@@ -10,4 +10,30 @@ database = root.databases.create(
 # CreateMode.if_not_exists: 機能的に SQL の CREATE IF NOT EXISTS と同等です。
 # CreateMode.error_if_exists: オブジェクトがすでにSnowflakeに存在する場合、例外を発生させます
 -------------------------------------------------------
-②
+②データベースにスキーマを作成
+
+schema = database.schemas.create(
+  Schema(
+    name="PYTHON_API_SCHEMA"),
+    mode=CreateMode.or_replace,
+  )
+
+-------------------------------------------------------
+③先ほど作成したスキーマにテーブルを作成
+table = schema.tables.create(
+  Table(
+    name="PYTHON_API_TABLE",
+    columns=[
+      TableColumn(
+        name="TEMPERATURE",
+        datatype="int",
+        nullable=False,
+      ),
+      TableColumn(
+        name="LOCATION",
+        datatype="string",
+      ),
+    ],
+  ),
+mode=CreateMode.or_replace
+)
