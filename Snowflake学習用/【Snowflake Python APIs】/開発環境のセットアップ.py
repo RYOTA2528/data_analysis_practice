@@ -43,3 +43,10 @@ from snowflake.core.task.dagv1 import DAGOperation, DAG, DAGTask  # DAG: 複数�
                                                                   # DAGOperation: DAG定義の操作（追加・削除など）に使う
 
 from snowflake.core.warehouse import Warehouse  # 仮想ウェアハウス（クエリを実行するコンピュートリソース）の作成・管理用
+
+
+------------------------------------------------------------------------------------------------
+③ Snowflake Python API で $HOME/.snowflake/connections.toml に定義された接続情報を使って接続
+connection_params = {
+    "connection_name": "default"
+}
