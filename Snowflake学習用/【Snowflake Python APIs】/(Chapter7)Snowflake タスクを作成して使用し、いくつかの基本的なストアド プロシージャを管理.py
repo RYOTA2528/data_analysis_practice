@@ -125,3 +125,47 @@ trunc_task.suspend()
 trunc_task.drop()
 filter_task.drop()
 
+# 9 Snowflake上でPython APIを使ってDAG（有向非巡回グラフ）形式でタスクを作成・デプロイする
+# 多数のタスクの実行を調整するための機能
+# DAG（タスクの依存関係を表すグラフ）の名前を指定
+dag_name = "python_api_dag"
+
+# 1日ごとにスケジュールされるDAGを作成
+dag = DAG(name=dag_name, schedule=timedelta(days=1))
+
+# `with` ブロック内でDAGにタスクを登録していく
+with dag:
+    # 1つ目のタスクを定義：`trunc` というPython関数を呼び出すストアドプロシージャを実行
+    dag_task1 = DAGTask(
+        name="task_python_api_trunc",  # タスク名
+        definition=StoredProcedureCall(
+            func=trunc,  # 呼び出すPython関数（あらかじめSnowflakeにアップロードされていることが前提）
+            stage_location=f"@{tasks_stage}",  # ステージの場所（ファイルが格納されている）
+            packages=["snowflake-snowpark-python"]  # Snowparkライブラリを使用
+        ),
+        warehouse="COMPUTE_WH",  # タスク実行時に使用するウェアハウス
+    )
+
+    # 2つ目のタスク：`filter_by_shipmode` 関数を呼び出すストアドプロシージャを実行
+    dag_task2 = DAGTask(
+        name="task_python_api_filter",
+        definition=StoredProcedureCall(
+            func=filter_by_shipmode,
+            stage_location=f"@{tasks_stage}",
+            packages=["snowflake-snowpark-python"]
+        ),
+        warehouse="COMPUTE_WH",
+    )
+
+    # タスクの依存関係を定義：dag_task1 が終わった後に dag_task2 を実行
+    dag_task1 >> dag_task2
+
+# DAG操作用のオブジェクトを作成（タスクをスキーマにデプロイするためのもの）
+dag_op = DAGOperation(schema)
+
+# DAGをSnowflakeにデプロイ（すでに存在する場合は置き換え）
+dag_op.deploy(dag, mode=CreateMode.or_replace)
+
+
+
+
