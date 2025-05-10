@@ -56,3 +56,31 @@ def filter_by_shipmode(session: Session, mode: str) -> str:
         .write.save_as_table("filter_table")
     )
     return "Filter table successfully created!"  # 成功メッセージを返す
+
+# 4 以前に作成したPython関数をストアドプロシージャとして実行する2つのタスクを定義、作成
+# タスク用のステージを指定（データベース名.スキーマ名.TASKS_STAGE）
+tasks_stage = f"{database.name}.{schema.name}.TASKS_STAGE"
+
+# task1: 1分ごとに実行されるタスクを定義
+task1 = Task(
+    name="task_python_api_trunc",  # タスクの名前
+    definition=StoredProcedureCall(
+        func=trunc,  # 実行するPython関数（テーブルの先頭n件をコピーする）
+        stage_location=f"@{tasks_stage}",  # 関数コードを保存・実行するステージの場所（@マーク付き）
+        packages=["snowflake-snowpark-python"],  # Snowparkを使うためのパッケージ指定
+    ),
+    warehouse="COMPUTE_WH",  # 実行に使用するSnowflakeの仮想ウェアハウス
+    schedule=timedelta(minutes=1)  # 1分ごとにこのタスクをスケジューリング
+)
+
+# task2: スケジュールなしで定義されるタスク（必要に応じて起動）
+task2 = Task(
+    name="task_python_api_filter",  # タスクの名前
+    definition=StoredProcedureCall(
+        func=filter_by_shipmode,  # 出荷モードでフィルターする関数を実行
+        stage_location=f"@{tasks_stage}",  # 実行ステージの場所（同じく@付き）
+        packages=["snowflake-snowpark-python"],  # Snowparkライブラリを使用
+    ),
+    warehouse="COMPUTE_WH"  # 使用するウェアハウス（同じくCOMPUTE_WH）
+    # スケジュールは指定されていないので、手動または他のタスクから起動される
+)
