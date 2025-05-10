@@ -108,3 +108,10 @@ for t in taskiter:
 # 7 タスクを作成すると、そのタスクはデフォルトで一時停止されるため再開処理を追加
 trunc_task.resume()
 
+# 8 trunc_task タスクが開始されたことを確認する処理の追加
+taskiter = tasks.iter()
+for t in taskiter:
+    print("Name: ", t.name, "| State: ", t.state)
+# 以下出力結果となる
+# Name:  TASK_PYTHON_API_FILTER | State:  suspended
+# Name:  TASK_PYTHON_API_TRUNC | State:  started
