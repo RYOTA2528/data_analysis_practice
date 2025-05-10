@@ -103,3 +103,8 @@ filter_task = tasks.create(task2, mode=CreateMode.or_replace)
 taskiter = tasks.iter()
 for t in taskiter:
     print(t.name)
+
+
+# 7 タスクを作成すると、そのタスクはデフォルトで一時停止されるため再開処理を追加
+trunc_task.resume()
+
