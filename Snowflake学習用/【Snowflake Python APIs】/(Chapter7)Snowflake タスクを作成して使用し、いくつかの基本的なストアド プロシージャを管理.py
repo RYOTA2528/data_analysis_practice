@@ -23,4 +23,8 @@ schema = database.schemas.cretae(
         mode=CreateMode.or_replace,
     )
 
-#2 
+#2 タスクが呼び出すストアドプロシージャと、ストアドプロシージャを保持するステージを設定
+
+#  Snowflake Python APIs root オブジェクトを使って、以前に作成した PYTHON_API_DB データベースと PYTHON_API_SCHEMA スキーマにステージを作成
+stages = root.database[database.name].schemas[schema.name].stages
+stages.create(Stage(name="TASKS_STAGE"))
