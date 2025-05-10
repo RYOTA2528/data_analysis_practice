@@ -84,3 +84,17 @@ task2 = Task(
     warehouse="COMPUTE_WH"  # 使用するウェアハウス（同じくCOMPUTE_WH）
     # スケジュールは指定されていないので、手動または他のタスクから起動される
 )
+
+# 5 データベーススキーマから TaskCollection オブジェクト（tasks）を取り出し、タスクコレクションで .create()しタスクを作成
+# create the task in the Snowflake database
+# `tasks` は `schema` オブジェクトの中のタスク管理オブジェクトを参照している
+tasks = schema.tasks
+
+# `task1` を Snowflake にタスクとして作成（すでに存在する場合は置き換え）
+trunc_task = tasks.create(task1, mode=CreateMode.or_replace)
+
+# `task2` の前に `trunc_task` を実行するように依存関係（前提条件）を設定
+task2.predecessors = [trunc_task.name]
+
+# `task2` を Snowflake にタスクとして作成（すでに存在する場合は置き換え）
+filter_task = tasks.create(task2, mode=CreateMode.or_replace)
