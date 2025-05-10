@@ -115,3 +115,13 @@ for t in taskiter:
 # 以下出力結果となる
 # Name:  TASK_PYTHON_API_FILTER | State:  suspended
 # Name:  TASK_PYTHON_API_TRUNC | State:  started
+
+
+※【重要】※
+# タスクのステータスを確認したいときは、いつでもこのステップを繰り返すこと
+
+# 9 タスク・リソースをクリーンアップするには、まずタスクを一時停止してからドロップ
+trunc_task.suspend()
+trunc_task.drop()
+filter_task.drop()
+
