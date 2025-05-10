@@ -28,3 +28,31 @@ schema = database.schemas.cretae(
 #  Snowflake Python APIs root オブジェクトを使って、以前に作成した PYTHON_API_DB データベースと PYTHON_API_SCHEMA スキーマにステージを作成
 stages = root.database[database.name].schemas[schema.name].stages
 stages.create(Stage(name="TASKS_STAGE"))
+
+#3 タスクがストアドプロシージャとして実行する2つの基本的なPython関数を作成
+dfrom snowflake.snowpark import Session
+from snowflake.snowpark.functions import col
+
+# 指定した件数だけ別テーブルにコピーする関数
+def trunc(session: Session, from_table: str, to_table: str, count: int) -> str:
+    (
+        # from_table から count 件だけ取得し、
+        # to_table という名前で新しいテーブルとして保存
+        session.table(from_table).limit(count).write.save_as_table(to_table)
+    )
+    return "Truncated table successfully created!"  # 成功メッセージを返す
+
+# L_SHIPMODE 列で指定されたモードに一致するデータを10件だけ抽出し、新しいテーブルを作成する関数
+def filter_by_shipmode(session: Session, mode: str) -> str:
+    (
+        session
+        # サンプルデータベースの lineitem テーブルを参照
+        .table("snowflake_sample_data.tpch_sf100.lineitem")
+        # L_SHIPMODE が mode と一致するレコードだけをフィルタリング
+        .filter(col("L_SHIPMODE") == mode)
+        # 上位10件に限定
+        .limit(10)
+        # 結果を "filter_table" という名前で保存
+        .write.save_as_table("filter_table")
+    )
+    return "Filter table successfully created!"  # 成功メッセージを返す
