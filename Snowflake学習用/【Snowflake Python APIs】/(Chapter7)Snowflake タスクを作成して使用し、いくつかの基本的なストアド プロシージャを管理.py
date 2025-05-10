@@ -98,3 +98,8 @@ task2.predecessors = [trunc_task.name]
 
 # `task2` を Snowflake にタスクとして作成（すでに存在する場合は置き換え）
 filter_task = tasks.create(task2, mode=CreateMode.or_replace)
+
+# 6 2つのタスクが存在することを確認
+taskiter = tasks.iter()
+for t in taskiter:
+    print(t.name)
