@@ -22,3 +22,23 @@ print(f"Visiting {endpoints['ui']} in your browser. You might need to log in the
 webbrowser.open(f"https://{endpoints['ui']}")
 
 # このURLを開くと、SnowflakeがホストしているNginx Webサービスにアクセスでき、HTMLの画面などが表示されるはずです
+
+# 3 サービスを一時停止してからその状態を確認する
+from time import sleep
+
+nginx_service.suspend()
+sleep(3)
+print(nginx_service.get_service_status(timeout=5))
+
+# 4 サービスを再開する
+nginx_service.resume()
+sleep(3)
+print(nginx_service.get_service_status(timeout=5))
+
+# コンピューティングプールとサービスを中断する
+new_compute_pool_def.suspend()
+nginx_service.suspend()
+
+# コンピューティングプールとサービスを削除する
+new_compute_pool_def.drop()
+nginx_service.drop()
