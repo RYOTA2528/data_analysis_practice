@@ -38,3 +38,5 @@ docker pull --platform linux/amd64 amd64/nginx
 # 6 amd64/nginx イメージに Snowflake イメージリポジトリ URL のタグを付けます。
 docker tag docker.io/amd64/nginx:latest <repository_url>/<image_name>
 
+# 7 Snowflakeアカウントのリポジトリにイメージをアップロード
+docker push <repository_url>/<image_name>
