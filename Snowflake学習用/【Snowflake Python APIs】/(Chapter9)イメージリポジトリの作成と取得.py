@@ -27,3 +27,14 @@ repositories = schema.image_repositories
 # <orgname>-<acctname>.registry.snowflakecomputing.com/spcs_python_api_db/public/myimagerepository
 # ホスト名は以下の部分
 # <orgname>-<acctname>.registry.snowflakecomputing.com
+
+
+# 4 SnowflakeでDockerを認証する
+docker login <registry_hostname> -u <username>
+
+# 5 NGINX イメージの AMD64 ビルドを Docker Hub: から取得します。
+docker pull --platform linux/amd64 amd64/nginx
+
+# 6 amd64/nginx イメージに Snowflake イメージリポジトリ URL のタグを付けます。
+docker tag docker.io/amd64/nginx:latest <repository_url>/<image_name>
+
