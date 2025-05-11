@@ -37,3 +37,16 @@ service_def = Service(
 nginx_service = schema.services.create(service_def)
 
 # このコードにより、Nginxコンテナが MyComputePool 上で起動し、サービス名 MyService で管理されます。
+
+
+# 3 サービスの状態をチェックする
+from pprint import pprint
+
+pprint(nginx_service.get_service_status(timeout=5))
+# 以下出力なる
+{'auto_resume': True,
+'auto_suspend_secs': 3600,
+'instance_family': 'CPU_X64_XS',
+'max_nodes': 1,
+'min_nodes': 1,
+'name': 'MyService'}
