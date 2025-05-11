@@ -18,4 +18,12 @@ my_repo = my_repo_res.fetch()
 print(my_repo.name)
 
 
-# 3 
+# 3 イメージをビルドしてアップロードする前に、リポジトリに関する情報（リポジトリ URL とレジストリのホスト名）が必要なため取得
+repositories = schema.image_repositories
+  for repo_obj in repositories.iter():
+    print(repo_obj.repository_url)
+
+# 以下出力結果となる
+# <orgname>-<acctname>.registry.snowflakecomputing.com/spcs_python_api_db/public/myimagerepository
+# ホスト名は以下の部分
+# <orgname>-<acctname>.registry.snowflakecomputing.com
