@@ -16,7 +16,7 @@ OAuth の使用
 2.公開キーをSnowflakeユーザーに割り当てます。ユーザーにキーを割り当てたら、 DESCRIBE USER コマンドを実行します。出力では、 RSA_PUBLIC_KEY_FP プロパティは、ユーザーに割り当てられた公開キーのフィンガープリントに設定する必要があります。
 
 
-【1.2のために秘密鍵・公開鍵の設定方法は以下】
+---------------------------【1.2のために秘密鍵・公開鍵の設定方法は以下】---------------------------
 
 ※秘密キーを生成
 ↓
@@ -49,6 +49,44 @@ MIIBIj...
 ※Snowflakeユーザーに公開キーを割り当てる
 
 ALTER USER example_user SET RSA_PUBLIC_KEY='MIIBIjANBgkqh...';
+
+
+※ユーザーの公開キーのフィンガープリントを検証する
+※つまり、Snowflake に登録した ユーザーの公開キー が、手元の公開キーと一致しているかを確認します。
+
+1.ユーザーの公開キーのフィンガープリントを取得
+DESC USER example_user;
+SELECT SUBSTR((SELECT "value" FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+  WHERE "property" = 'RSA_PUBLIC_KEY_FP'), LEN('SHA256:') + 1);
+
+出力結果イメージ：
+Azk1Pq...
+
+２．ローカル（手元）の公開キーからフィンガープリントを作成
+次に、手元にある公開キー（例：rsa_key.pub）を使って、同じ方法でフィンガープリントを作成
+openssl rsa -pubin -in rsa_key.pub -outform DER | \
+openssl dgst -sha256 -binary | \
+openssl enc -base64
+
+
+出力結果イメージ：
+writing RSA key
+Azk1Pq...
+
+
+両方の出力を比較
+Snowflake の出力
+Azk1Pq...
+ローカルの出力
+Azk1Pq...
+ 一致していれば公開キーの設定は正しい です。
+
+------------------------------------------------------
+
+
+
+
+
 
 
 
