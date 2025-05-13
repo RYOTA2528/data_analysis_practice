@@ -46,6 +46,10 @@ MIIBIj...
 -----END PUBLIC KEY-----
 
 
+※Snowflakeユーザーに公開キーを割り当てる
+
+ALTER USER example_user SET RSA_PUBLIC_KEY='MIIBIjANBgkqh...';
+
 
 
 
