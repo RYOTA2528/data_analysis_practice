@@ -98,6 +98,25 @@ set SNOWSQL_PRIVATE_KEY_PASSPHRASE='<passphrase>' Windows
 $ snowsql -a <account_identifier> -u <user> --private-key-path <path>/rsa_key.p8
 
 
+④.キーペアローテーションの構成
+(補足：、 ALTER USER の RSA_PUBLIC_KEY および RSA_PUBLIC_KEY_2 パラメーターを使用して、最大2個の公開キーを1人のユーザーに関連付けることができます。)
+次の更新を使用して、 キーペア認証の構成 のステップすべてを完了します。
+
+１.新しい秘密キーと公開キーのセットを生成します。
+
+ユーザーに公開キーを割り当てます。公開キーの値を、 RSA_PUBLIC_KEY または RSA_PUBLIC_KEY_2 のいずれかのうち現在使用されていないキーの値に設定します。
+例: ALTER USER example_user SET RSA_PUBLIC_KEY_2='JERUEHtcve...';
+
+
+２.Snowflakeに接続するようにコードを更新します。新しい秘密キーを指定します。
+Snowflakeは、接続情報とともに送信された秘密キーに基づいて、認証用の正しいアクティブな公開キーを検証します。
+
+
+３．ALTER USER コマンドを使用し、ユーザープロファイルから古い公開キーを削除します。
+
+ALTER USER example_user UNSET RSA_PUBLIC_KEY;
+
+
 ------------------------------------------------------
 
 
