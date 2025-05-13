@@ -1,3 +1,21 @@
 // 前提
 REST リクエストは、リクエストを認証するためにリクエストヘッダーに JWT トークンを必要とします
 
+
+(ステップ①)
+【補足】Snowflake REST APIs を使用するときにサーバーに対して認証する方法.txt　メモに記載した方法で「JWT トークン」を取得
+
+（ステップ②）
+PostmanでSnowflake Database API >api>v2>database>Creates a database
+と階層を進みクリック。「認可」をクリックし先ほどのJWTトークンを張り付ける
+
+
+(ステップ③)
+次に、各リクエストヘッダーで x-snowflake-authorization-token-type キーを KEYPAIR_JWT に設定します。
+
+
+注釈
+
+チュートリアル 前提条件 で述べたように、 AUTHENTICATION POLICY を定義する必要があります。 { "code": "390202", "message": "Authentication attempt rejected by the current authentication policy." } のようなエラーメッセージが表示された場合は、次の SQL コマンドを実行してポリシーを定義できます。
+
+SHOW AUTHENTICATION POLICIES; alter AUTHENTICATION POLICY <your authentication policy> set AUTHENTICATION_METHODS 
