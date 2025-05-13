@@ -8,7 +8,8 @@ OAuth の使用
 ※[キーペア認証の使用]こちらを使用
 
 
-ステップ①：キーペア認証を設定する
+【ステップ①】：キーペア認証を設定する
+
 このプロセスの一環として、次を実行する必要があります。
 
 1.公開キーと秘密キーのペアを生成します。生成された秘密キーはファイル内にある必要があります（例: rsa_key.p8 という名前）。
@@ -119,7 +120,101 @@ ALTER USER example_user UNSET RSA_PUBLIC_KEY;
 
 ------------------------------------------------------
 
+【ステップ②】：生成された秘密キーを使用して Snowflake に接続 できることを確認する
 
+$ snowsql -a <account_identifier> -u <user> --private-key-path <path>/rsa_key.p8
+
+
+
+【ステップ③】JWT トークンの生成
+（※重要※
+Postmanではリクエストを認証するためにリクエストヘッダーに JWT トークンを必要とします。）
+
+----------------------------------
+
+WT（JSON Web Token）とは？
+JWT は、以下の3つの部分で構成されるトークン形式です：
+
+ヘッダー（Header）
+→ トークンのタイプや署名アルゴリズムの情報が入っている
+例: { "alg": "RS256", "typ": "JWT" }
+
+ペイロード（Payload）
+→ ユーザー情報や権限などのデータを含む
+例: { "sub": "user@example.com", "exp": 1715600000 }
+
+署名（Signature）
+→ 上記の内容に対し、秘密鍵で署名したもの（改ざん防止）
+
+この3つを . でつなげた文字列が JWT です。
+
+-----------------------------------
+
+
+
+アプリケーション・コード内で JWT トークンを生成するには、以下の手順を使用
+
+①.ユーザーの公開キーのフィンガープリント（SHA-256ハッシュ）を生成
+（フィンガープリントの前に SHA256: を付けます。）
+SHA256:＜フィンガープリントのハッシュ＞
+
+もしくは、SQL DESCRIBE USER コマンドを実行して、 RSA_PUBLIC_KEY_FP プロパティから値を取得できます
+
+
+②.JWT のペイロードを作成
+JWT には以下の情報が必要です：
+
+フィールド	説明	例
+iss	発行者	MYORG-MYACCOUNT.MYUSER.SHA256:Azk1Pq3h...XYZ
+sub	件名	MYORG-MYACCOUNT.MYUSER
+iat	発行時刻（Unix時間）	1715600000
+exp	有効期限（発行時刻から最大1時間）	1715603600
+
+③.JWTコードで生成（Python の例）
+
+pip install pyjwt cryptography
+
+
+import jwt
+import time
+
+# フィンガープリント（SHA256:付き）
+fingerprint = "SHA256:Azk1Pq3h...XYZ"
+
+# アカウント識別子（大文字で）
+account_identifier = "MYORG-MYACCOUNT"
+user = "MYUSER"
+
+# 現在時刻
+now = int(time.time())
+
+# JWTペイロード
+payload = {
+    "iss": f"{account_identifier}.{user}.{fingerprint}",
+    "sub": f"{account_identifier}.{user}",
+    "iat": now,
+    "exp": now + 3600  # 最大1時間
+}
+
+# 秘密鍵（.p8ファイル）を読み込み
+with open("rsa_key.p8", "r") as f:
+    private_key = f.read()
+
+# JWT 生成（RS256署名）
+encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+
+print("JWT Token:")
+print(encoded_jwt)
+
+
+④リクエストで使う HTTP ヘッダー（Postman用)
+
+Authorization: Bearer <生成したJWTトークン>
+X-Snowflake-Authorization-Token-Type: KEYPAIR_JWT
+
+
+⑤snowsql で使う例
+snowsql -a MYORG-MYACCOUNT -u MYUSER --authenticator=oauth --token <JWT_TOKEN>
 
 
 
