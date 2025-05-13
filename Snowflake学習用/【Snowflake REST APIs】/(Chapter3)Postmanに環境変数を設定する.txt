@@ -1,0 +1,5 @@
+Postmanの環境で環境変数を設定できます。これらの変数をPostmanで使うには、{{variable_name}} の形式にします。
+
+すべてのエンドポイント URLs は:codenowrap:baseURL で始まり、Snowflake アカウントを識別します。baseURL には形式があります。<account_locator>.snowflakecomputing.com 、<account_locator> があなたのSnowflakeアカウント名です。
+
+Postmanで:codenowrap:baseURL 変数や他の変数を設定す
