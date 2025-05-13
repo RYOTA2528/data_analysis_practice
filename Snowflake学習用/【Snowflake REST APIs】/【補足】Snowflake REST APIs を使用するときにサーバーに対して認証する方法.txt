@@ -46,7 +46,7 @@ MIIBIj...
 -----END PUBLIC KEY-----
 
 
-※Snowflakeユーザーに公開キーを割り当てる
+①.Snowflakeユーザーに公開キーを割り当てる
 
 ALTER USER example_user SET RSA_PUBLIC_KEY='MIIBIjANBgkqh...';
 
@@ -62,7 +62,7 @@ SELECT SUBSTR((SELECT "value" FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 出力結果イメージ：
 Azk1Pq...
 
-２．ローカル（手元）の公開キーからフィンガープリントを作成
+③．ローカル（手元）の公開キーからフィンガープリントを作成
 次に、手元にある公開キー（例：rsa_key.pub）を使って、同じ方法でフィンガープリントを作成
 openssl rsa -pubin -in rsa_key.pub -outform DER | \
 openssl dgst -sha256 -binary | \
@@ -80,6 +80,23 @@ Azk1Pq...
 ローカルの出力
 Azk1Pq...
  一致していれば公開キーの設定は正しい です。
+
+③.キーペア認証を使用するようにSnowflakeクライアントを設定
+
+1.構成ファイルまたはコマンドラインのいずれかで、秘密キーファイルへのパスを指定
+(接続設定に private_key_path 接続パラメーターを追加し、作成した秘密鍵ファイルへのローカルパスを指定します。)
+
+private_key_path = <path>/rsa_key.p8
+
+2.SNOWSQL_PRIVATE_KEY_PASSPHRASE 環境変数を使用して、秘密鍵ファイルを復号化するためのパスフレーズを設定
+
+export SNOWSQL_PRIVATE_KEY_PASSPHRASE=<passphrase> Linux
+set SNOWSQL_PRIVATE_KEY_PASSPHRASE='<passphrase>' Windows
+
+
+3.private-key-path 接続パラメーターを含めて、暗号化された秘密鍵ファイルへのパスを指定
+$ snowsql -a <account_identifier> -u <user> --private-key-path <path>/rsa_key.p8
+
 
 ------------------------------------------------------
 
