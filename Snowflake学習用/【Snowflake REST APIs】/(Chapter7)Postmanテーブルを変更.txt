@@ -24,4 +24,4 @@
 }
 
 
-
+ステップ④：/api/v2/databases/{database}/schemas/{schema}/tables/{name} エンドポイントに:codenowrap:GET リクエストを送信してテーブルの詳細を取得し、変更を検証します。この場合、 database 、 schema 、 name のパス変数にそれぞれ demo_db 、 demo_sc 、 demo_tbl を指定します。
