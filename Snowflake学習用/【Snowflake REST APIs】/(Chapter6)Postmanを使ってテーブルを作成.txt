@@ -1,0 +1,19 @@
+ステップ①：テーブルを作成するには、次のように /api/v2/databases/{database}/schemas/{schema}/tables エンドポイントに POST リクエストを送ります。
+
+ステップ②：データベース名（demo_db）とスキーマ名（demo_sc）を、リクエスト・ヘッダーの database と database パス変数にそれぞれ追加します。
+
+ステップ③：テーブル名（demo_tbl）とテーブル列をリクエスト・ボディに追加します。この場合、 C1 という列を1つ追加しています。
+
+{
+  "name": "demo_tbl",
+  "columns": [
+    {
+    "name": "c1",
+    "datatype": "integer",
+    "nullable": true,
+    "comment": "An integral value column"
+    }
+  ],
+  "comment": "Demo table for Snowflake REST API"
+}
+
