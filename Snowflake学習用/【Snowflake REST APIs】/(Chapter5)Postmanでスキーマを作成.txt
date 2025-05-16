@@ -1,0 +1,11 @@
+
+// スキーマを作成するには、次のように /api/v2/databases/{database}/schemas エンドポイントに POST リクエストを送ります。
+
+
+データベース名(demo_db) をリクエストヘッダーの database パス変数に追加します。
+
+
+// スキーマ名（demo_sc）をリクエスト・ボディに追加します。
+{
+  "name": "demo_sc",
+}
