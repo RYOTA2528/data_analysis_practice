@@ -1,0 +1,10 @@
+// データベースを作成する
+/api/v2/databases エンドポイントに、以下のリクエスト・ボディを持つ:codenowrap:POST リクエストを送信
+
+{
+  "name": "demo_db",  // データベースの名前。ここでは "demo_db"
+  "kind": "PERMANENT",  // データベースの種類。"PERMANENT" は永続的なデータベース
+  "comment": "snowflake rest api demo-db",  // データベースに付ける説明やメモ
+  "data_retention_time_in_days": "1",  // タイムトラベル機能でデータを復元できる保持期間（日数）。最大90日まで設定可能
+  "max_data_extension_time_in_days": "1"  // データ保持延長の最大日数（通常はFail-safe用途）
+}
