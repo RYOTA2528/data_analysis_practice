@@ -1,0 +1,27 @@
+ステップ①：作成したテーブルを変更するには、次のように /api/v2/databases/{database}/schemas/{schema}/tables/{name} エンドポイントに PUT リクエストを送ります。
+
+
+ステップ②：作成したデータベース、スキーマ、テーブルの名前を、対応するパス変数に指定します。
+
+
+ステップ③：リクエスト本文に、新しいテーブル定義を入力します。この場合、テーブルに新しい列を追加します。
+{
+  "name": "demo_tbl",
+  "columns": [
+    {
+    "name": "c1",
+    "datatype": "integer",
+    "nullable": true,
+    "comment": "An integral value column"
+    },
+    {
+    "name": "c2",
+    "datatype": "string",
+    "comment": "An string value column"
+    }
+  ],
+  "comment": "Demo table for Snowflake REST API"
+}
+
+
+
