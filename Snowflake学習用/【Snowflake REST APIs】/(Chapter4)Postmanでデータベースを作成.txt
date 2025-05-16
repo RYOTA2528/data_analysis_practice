@@ -8,3 +8,17 @@
   "data_retention_time_in_days": "1",  // タイムトラベル機能でデータを復元できる保持期間（日数）。最大90日まで設定可能
   "max_data_extension_time_in_days": "1"  // データ保持延長の最大日数（通常はFail-safe用途）
 }
+
+
+
+//あいまい検索の方法(データベース一覧を表示)
+GETリクエストで以下方法で実施
+
+{{baseUrl}}/api/v2/databases?like=%25demo%25
+
+
+名前が文字列 DEMO_DB で始まる最初のデータベースを返すには、 startsWith と showLimit のクエリ・パラメーターに
+EMO_DB と 1 を指定・・
+
+
+{{baseUrl}}/api/v2/databases?startsWith=DEMO_DB&showLimit=1
