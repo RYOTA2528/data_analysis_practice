@@ -17,3 +17,5 @@
   "comment": "Demo table for Snowflake REST API"
 }
 
+
+ステップ④：今作成したテーブルを取得するには、/api/v2/databases/{database}/schemas/{schema}/tables/{name} エンドポイントに:codenowrap:GET リクエストを送ります。この場合、 database 、 schema 、 name のパス変数にそれぞれ demo_db 、 demo_sc 、 demo_tbl を指定します。
