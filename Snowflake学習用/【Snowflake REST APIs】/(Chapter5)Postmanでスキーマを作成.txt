@@ -9,3 +9,6 @@
 {
   "name": "demo_sc",
 }
+
+
+//利用可能なスキーマを一覧表示するには、/api/v2/databases/{database}/schemas エンドポイントに:codenowrap:GET リクエストを送ります。この例では、 startsWith と showLimit のクエリ・パラメーターにそれぞれ DEMO_SC と 1 を指定して、名前が文字列 DEMO_SC で始まる最初のスキーマを返します。
