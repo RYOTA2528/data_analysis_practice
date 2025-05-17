@@ -1,0 +1,5 @@
+ステップ①：利用可能なすべてのタスクを一覧表示するには、次のように:codenowrap:/api/v2/databases/{database}/schemas/{schema}/tasks エンドポイントに、 GET リクエストを送ります。
+
+{{baseUrl}}/api/v2/databases/:database/schemas/:schema/tasks?rootOnly=false
+
+※Params タブで、rootOnly パラメーターを:codenowrap:false に設定し、:database と:codenowrap:schema パス変数を設定した環境変数 ({{default_db}} と:codenowrap:{{default_schema}}) を使用するように設定
