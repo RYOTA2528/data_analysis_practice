@@ -1,0 +1,6 @@
+ステップ①：失敗しても再試行しないタスクを実行するには、/api/v2/databases/{database}/schemas/{schema}/tasks/{name}:execute エンドポイントに POST リクエストを送ります。
+
+
+{{baseUrl}}/api/v2/databases/:databases/:database/schemas/:schema/tasks/{{test_task_name}}:execute?retryLast=fales
+
+※Params タブで、retryLast パラメーターを:codenowrap:false に設定し、database と:codenowrap:schema パス変数を設定した環境変数 (:codenowrap: ` {{default_db}}` と:codenowrap:{{default_schema}}) を使用するように設定します。
