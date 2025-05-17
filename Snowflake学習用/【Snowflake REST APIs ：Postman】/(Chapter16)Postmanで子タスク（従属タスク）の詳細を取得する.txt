@@ -1,0 +1,6 @@
+ステップ①：子タスク（従属タスク）の詳細を取得するには、:codenowrap:/api/v2/databases/{database}/schemas/{schema}/tasks/{name}/dependents エンドポイントに GET リクエストを送ります。
+
+
+{{baseUrl}}/api/v2/databases/:databases/:database/:schemas/:schema/tasks/:name/dependents?recursive=true
+
+※Params タブで、recursive クエリ・パラメーターを:codenowrap:true に設定し、database 、schema 、および:codenowrap:name パス変数を設定して、設定した環境変数、（{{default_db}}、{{default_schema}}、および:codenowrap:{{test_task_name}}）を使用します。
