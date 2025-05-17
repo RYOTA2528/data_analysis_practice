@@ -1,0 +1,62 @@
+ステップ①：タスクを作成するには、次のように:codenowrap:/api/v2/databases/{database}/schemas/{schema}/tasks エンドポイントに POST リクエストを送ります。
+
+{{baseUrl}}/api/v2/databases/:database/:schemas/:schema/tasks?/ctreateMode=orReplace
+
+※設定した環境変数（{{default_db}} と:codenowrap:`{{default_schema}} `）を使用します。(パラメータのvalueに記載)
+
+{
+  // タスクの名前。{{test_task_name}} はテンプレート変数
+  "name": "{{test_task_name}}",
+
+  // タスクが実行するSQLクエリ
+  "definition": "SELECT 1",
+
+  // 使用する仮想ウェアハウス名（処理リソースの指定）
+  "warehouse": "{{default_wh}}",
+
+  // 実行スケジュール。2分ごとに実行する設定
+  "schedule": {
+    "minutes": 2,
+    "schedule_type": "MINUTES_TYPE" // スケジュール単位が「分」であることを示す
+  },
+
+  // タスクの追加設定（意味不明なパラメータ名になっているが、おそらくデモ用）
+  "config": {
+    "consecteture": false,     // （例）カスタム設定フラグ？
+    "sed_9": 61393640,         // 任意の数値設定（意味は不明）
+    "doloref3": -85761000      // 任意の数値設定（意味は不明、負の数）
+  },
+
+  // タスクに関するコメント（typoあり："comment" を "commnent" にしている）
+  "commnent": "comment",
+
+  // セッションごとのパラメータ設定
+  "session_parameters": {
+    "TIMEZONE": "America/Los Angeles",  // セッションのタイムゾーン
+    "AUTOMCOMMIT": true                 // SQLが自動的にコミットされる設定
+  },
+
+  // エラー通知用インテグレーション（指定なし＝null）
+  "error_integration": null,
+
+  // タスク作成時に自動で使われるウェアハウスサイズ（指定なし）
+  "user_task_managed_initial_warehouse_size": null,
+
+  // 前提タスク（依存関係）がない場合は null
+  "predecessors": null,
+
+  // 自動リトライの最大回数（エラー発生時に再実行する試行回数）
+  "task_auto_retry_attempts": 3,
+
+  // タスクの最大実行時間（ミリ秒）。ここでは10秒（10000ミリ秒）
+  "user_task_timeout_ms": 10000,
+
+  // 指定回数以上失敗したらタスクを自動停止
+  "suspend_task_after_num_failures": 3,
+
+  // 実行条件。trueなら常に実行される（条件付き実行も可能）
+  "condition": true,
+
+  // タスクの重複実行を許可しない（false）
+  "allow_overlapping_execution": false
+}
