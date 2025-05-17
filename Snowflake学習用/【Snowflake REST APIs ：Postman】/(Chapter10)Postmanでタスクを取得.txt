@@ -1,0 +1,6 @@
+ステップ①：タスクの詳細を取得するには、次のように:codenowrap:/api/v2/databases/{database}/schemas/{schema}/tasks エンドポイントに、GET リクエストを送ります。
+
+
+{{baseUrl}}/api/v2/databases/:databases/schemas/:schemas/:schema/tasks/:name
+
+※設定した環境変数（{{default_db}},:codenowrap:{{default_schema}}、および:codenowrap:{{test_task_name}}）を設定

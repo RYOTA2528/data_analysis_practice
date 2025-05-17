@@ -1,6 +1,6 @@
 ステップ①：タスクを作成するには、次のように:codenowrap:/api/v2/databases/{database}/schemas/{schema}/tasks エンドポイントに POST リクエストを送ります。
 
-{{baseUrl}}/api/v2/databases/:database/:schemas/:schema/tasks?/ctreateMode=orReplace
+{{baseUrl}}/api/v2/databases/:database/:schemas/:schema/tasks?ctreateMode=orReplace
 
 ※設定した環境変数（{{default_db}} と:codenowrap:`{{default_schema}} `）を使用します。(パラメータのvalueに記載)
 
