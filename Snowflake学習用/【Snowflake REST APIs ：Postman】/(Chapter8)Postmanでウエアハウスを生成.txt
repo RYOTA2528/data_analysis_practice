@@ -1,0 +1,11 @@
+// demo_wh という名前の特別に小さな（xsmall）ウェアハウスを作成する
+
+ステップ①：：/api/v2/warehouses エンドポイントに以下のPOST リクエストを送ります。
+Params タブで、createMode パラメーターを:codenowrap:errorIfExists に設定し、意図せずに既存のウェアハウスを上書きしないようにします。
+{{baseUrl}}/api/v2/warehouse?createMode=errorifExits
+
+ステップ②：Bodyタブで以下追加
+{
+  "name": "demo_wh",
+  "warehouse_size": "xsmall"
+}
