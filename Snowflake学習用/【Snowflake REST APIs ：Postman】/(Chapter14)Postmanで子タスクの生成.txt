@@ -1,0 +1,22 @@
+ステップ①：子タスクを作成するには、図のように:codenowrap:/api/v2/databases/{database}/schemas/{schema}/tasks エンドポイントに、 POST リクエストを送ります。
+
+
+{{baseUrl}}/api/v2/databases/:databases/schemas/:schema/tasks?createMode=orReplace
+
+※Params タブで、createMode パラメーターを:codenowrap:orReplace に設定し、database と:codenowrap:schema パス変数を設定設定した環境変数（{{default_db}} と:codenowrap:`{{default_schema}} `）を使用します。
+
+ステップ②：Body タブで、図のようにリクエスト・ボディを追加します。name パラメーターは子タスクの名前を指定し、predecessors は親タスクの名前を特定します。
+
+{
+  // タスクの名前（子タスク）
+  "name": "test_child_task",
+
+  // 実行するSQLクエリ。ここではダミーで「SELECT 1」
+  "definition": "SELECT 1",
+
+  // タスクが使用する仮想ウェアハウス。{{default_wh}} はテンプレート変数
+  "warehouse": "{{default_wh}}",
+
+  // 依存関係（このタスクの「親タスク」）。{{test_task_name}} はテンプレート変数で親タスクの名前を参照
+  "predecessors": "{{test_task_name}}"
+}
