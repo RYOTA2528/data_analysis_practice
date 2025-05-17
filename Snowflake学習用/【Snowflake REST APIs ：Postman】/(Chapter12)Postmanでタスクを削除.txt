@@ -1,0 +1,6 @@
+ステップ①：タスクを削除するには、次のように:codenowrap:/api/v2/databases/{database}/schemas/{schema}/tasks/{name} エンドポイントに、DELETE リクエストを送ります。
+
+
+{{baseUrl}}/api/v2/databases/:database/schemas/:schema/tasks/:name?ifExists=fales
+
+※Params タブで、database 、schema、name パス変数を設定して設定した環境変数（{{default_db}},:codenowrap:{{default_schema}}、および:codenowrap:{{test_task_name}}）を設定
