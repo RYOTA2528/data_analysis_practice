@@ -1,0 +1,7 @@
+ステップ①：タスクの完了したグラフ実行の詳細を返すには、 /api/v2/databases/{database}/schemas/{schema}/tasks/{name}:execute エンドポイントに、 GET リクエストを送ります。
+
+{{baseUrl}}/api/v2/databases/:databases/:databases/schemas/:schema/tasks/:name/complete-graphs?resultLimit=5&errorOnly=false
+※Params タブで、次の操作を実行します。
+
+・resultLimit と:codenowrap:errorOnly クエリパラメーターをそれぞれ:codenowrap:5 と:codenowrap:false に設定します。
+・database 、schema 、および:codenowrap:name パス変数を設定して、codenowrap:{{default_db}}、{{default_schema}}、および:codenowrap:{{test_task_name}}）を使用するように設定
