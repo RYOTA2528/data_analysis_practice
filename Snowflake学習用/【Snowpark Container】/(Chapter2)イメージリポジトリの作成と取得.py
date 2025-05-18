@@ -6,7 +6,6 @@
 
 # 1 リポジトリを作成し、リポジトリに関する情報を取得する
 from snowflake.core.image_repository import ImageRepository
-
 my_repo = ImageRepository("MyImageRepository")
 schema.image_repositories.create(my_repo)
 
