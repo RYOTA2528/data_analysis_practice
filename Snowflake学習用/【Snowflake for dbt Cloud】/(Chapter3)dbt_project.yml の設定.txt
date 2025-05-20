@@ -1,0 +1,41 @@
+// dbt_project.yml の設定
+
+ステップ①：プロジェクトの開発を始めるには、作業用の新しいGitブランチを作成する必要があります。
+
+create branch画面左上の緑色のボタンをクリック
+↓
+snowflake_workshop。名前を入力したら、 をクリック
+
+
+------
+以下のように定義を修正
+name: 'snowflake_workshop'  # プロジェクトの名前。DBT Cloudなどで識別される。
+version: '1.0.0'            # プロジェクトのバージョン。バージョン管理のために記述。
+
+config-version: 2          # DBTの設定バージョン。現在は「2」が推奨されている。
+
+profile: 'default'         # DBTプロファイルファイル（~/.dbt/profiles.yml）内の設定名を指定。接続情報を参照。
+
+# モデル、マクロ、スナップショットなど、DBTで使うファイルのディレクトリを指定
+model-paths: ["models"]       # モデルSQLファイルを保存するフォルダ（通常は "models"）
+analysis-paths: ["analysis"]   # 分析用のSQLファイルを置くフォルダ
+test-paths: ["tests"]          # データテストファイル（schema tests など）を保存する場所
+seed-paths: ["seeds"]          # CSV形式のシードデータファイルの保存先
+macro-paths: ["macros"]        # ユーザー定義マクロを保存するフォルダ
+snapshot-paths: ["snapshots"]  # スナップショット定義を格納するフォルダ
+
+target-path: "target"          # DBTの成果物（compiled SQLなど）を出力するフォルダ
+
+clean-targets:                 # `dbt clean` 実行時に削除されるフォルダの一覧
+  - "target"
+  - "dbt_modules"
+
+models:
+  snowflake_workshop:          # プロジェクト名と一致。これ以下にモデルごとの設定を記述。
+    staging:                   # staging層のモデル設定
+      materialized: view       # staging層のモデルは「ビュー」として作成
+      snowflake_warehouse: pc_dbt_wh  # 使用するSnowflakeの仮想ウェアハウスを指定
+    marts:                     # marts層（ビジネス論理レイヤー）の設定
+      materialized: table      # 「テーブル」としてマテリアライズされる（実体がSnowflake上に作られる）
+      snowflake_warehouse: pc_dbt_wh_large  # より大きなウェアハウスを使用（処理速度優先）
+
