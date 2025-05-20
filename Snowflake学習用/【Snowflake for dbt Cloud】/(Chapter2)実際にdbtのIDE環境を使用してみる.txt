@@ -1,0 +1,68 @@
+// 実際にdbtのIDE環境を使用してみる
+（補足）
+Develop画面左上のボタンをクリック
+↓
+initialize dbt project画面左上隅の緑色のボタンをクリック
+↓
+Commit Changes
+ここで作業をコミットすると、Partner Connect サインアップ時に作成されたマネージド Git リポジトリに保存されます。この最初のコミットは、mainブランチに直接コミットされる唯一のコミットであり、今後はすべての作業を開発ブランチで行います。これにより、開発作業と本番環境のコードを分離できます。
+
+
+ステップ①：最初の dbt モデルを実行
+（フォルダ内の dbt プロジェクトには、models/examplesコマンド ラインで dbt を実行するための方法）
+↓
+画面下部のコマンド ラインに「dbt run」で実行
+↓
+Detailsでmodelに記載のあるクエリとその実行詳細が確認できる
+
+create or replace transient table PC_DBT_DB.dbt_WDataEmp.my_first_dbt_model
+    
+    as (/*
+    Welcome to your first dbt model!
+    Did you know that you can also configure models directly within SQL files?
+    This will override configurations stated in dbt_project.yml
+
+    Try changing "table" to "view" below
+*/
+
+
+
+with source_data as (
+
+    select 1 as id
+    union all
+    select null as id
+
+)
+
+select *
+from source_data
+
+/*
+    Uncomment the line below to remove records with null `id` values
+*/
+
+-- where id is not null
+    )
+;
+09:53:39 SQL status: SUCCESS 1 in 1.328 seconds
+09:53:39 1 of 2 OK created sql table model dbt_WDat
+
+
+■補足①■
+TRANSIENT TABLE の特徴
+Time Travel（タイムトラベル）機能が制限される：標準テーブルのように過去の状態に戻すことができない。
+
+復旧ログが最小限なので、コスト削減が可能。
+
+開発・一時的なデータ保存などで使われる。
+
+永続性はある（セッションが終わっても消えない）ので、TEMPORARY TABLE とは異なります。
+
+
+■補足②■
+DBT モデル（例：my_first_dbt_model.sql）で作成しているなら、通常は DBT の中で {{ config(materialized='table') }} を書くことで永続テーブルになりますが、transient にしたいときは：
+
+{{ config(materialized='table', transient=true) }}
+
+select 1 as id
