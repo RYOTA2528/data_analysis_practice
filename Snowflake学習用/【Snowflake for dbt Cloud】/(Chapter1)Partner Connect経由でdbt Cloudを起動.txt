@@ -1,0 +1,16 @@
+// Snowflake Partner Connectを使用して、 dbt Cloudアカウントとプロジェクトを設定します。
+
+ステップ①：Admin左側のサイドバーにPartner Connectをクリック
+
+ステップ②：検索バーで「dbt」と入力し、Optional Grantドロップダウンメニューをクリックし、「Snowflake_Sample_Data」と入力
+(今回はサンプルDBをそのまま使用)
+
+ステップ③：これにより、dbt Cloud トライアル専用の dbt ユーザー、データベース、ウェアハウス、ロールが作成されます。
+
+Database名：PC_DBT_DB
+Warehouse名：PC_DBT_WH(X-Small)
+System User: PC_DBT_USER
+System Role PC_DBT_ROLE
+
+
+※dbtプロジェクトのバージョン管理を容易にするため、プロジェクトをマネージドリポジトリに接続しました。つまり、dbt Labsがリポジトリをホストします。これにより、リポジトリを自分で作成してホストすることなく、Gitワークフローにアクセスできます。
