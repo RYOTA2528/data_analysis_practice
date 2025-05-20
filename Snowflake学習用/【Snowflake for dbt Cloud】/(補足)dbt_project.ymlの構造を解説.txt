@@ -1,0 +1,44 @@
+主要な設定（dbt_project.yml）
+✅ 1. materialized（マテリアライゼーション）
+目的：DBTモデルをビューまたはテーブルとしてSnowflakeに作成する方法を指定。
+
+デフォルト：view
+
+設定例：
+
+yaml
+
+models:
+  your_project:
+    staging:
+      materialized: view
+    marts:
+      materialized: table
+✅ 2. snowflake_warehouse（ウェアハウスの指定）
+目的：各フォルダで使用するSnowflakeのウェアハウスを指定。
+
+設定例：
+
+yaml
+
+models:
+  your_project:
+    staging:
+      snowflake_warehouse: x-smallpc_dbt_wh
+    marts:
+      snowflake_warehouse: largepc_dbt_wh_large
+
+
+
+📁 推奨フォルダ構造
+フォルダ	内容
+sources/	ソースデータの定義（例：TPC-H）
+staging/	ソースごとの軽い整形モデル（型変換、名前変更など）
+marts/	ビジネスロジックを適用した主要変換モデル（ファクト、ディメンション等）
+
+💡 ポイント
+プロジェクト構成でフォルダごとの設定が可能 → モデルごとの個別指定より効率的。
+
+構成は階層的に適用され、下位（モデル）で上書き可能。
+
+マテリアライゼーションとウェアハウス設定により、パフォーマンスとコスト最適化が可能。
