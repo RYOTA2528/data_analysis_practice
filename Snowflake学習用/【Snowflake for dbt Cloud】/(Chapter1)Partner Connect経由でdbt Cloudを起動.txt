@@ -1,6 +1,6 @@
 // Snowflake Partner Connectを使用して、 dbt Cloudアカウントとプロジェクトを設定します。
 
-ステップ①：Admin左側のサイドバーにPartner Connectをクリック
+ステップ①：データ製品左側のサイドバーにPartner Connectをクリック
 
 ステップ②：検索バーで「dbt」と入力し、Optional Grantドロップダウンメニューをクリックし、「Snowflake_Sample_Data」と入力
 (今回はサンプルDBをそのまま使用)
