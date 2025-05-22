@@ -1,0 +1,64 @@
+ソース（sources）とは？
+生データを定義・説明する仕組み：データウェアハウス内の既存テーブル（例: orders, lineitem）に意味付け。
+
+利点：
+
+系統の追跡が可能に（どの生データから派生したか）
+
+テスト・ドキュメント化が可能に（信頼性アップ）
+
+? ステージングモデル（staging models）とは？
+ソーステーブルと1:1対応する中間モデル
+
+主な処理内容：
+
+列名の変更（snake_case → user_friendly_name）
+
+データ型の再キャスト
+
+必要な列だけ選択
+
+目的：
+
+下流のモデル開発を効率化（モジュール化 & DRY原則）
+
+変更に強い構造に（1か所直すだけで済む）
+
+
+
+--------------------------------------------
+
+【ソースファイルを作成】
+
+次のファイルパスで、新しいファイルを作成(models/staging/tpch/tpch_sources.yml)
+
+version: 2  # dbtのYAMLファイルのバージョン指定（常に2を使用）
+
+sources:
+  - name: tpch  # ソースの名前。後のモデルなどで source('tpch', 'orders') のように参照する
+    description: source tpch data  # このソース全体に関する説明
+    database: snowflake_sample_data  # データが存在するデータベース名（SnowflakeのサンプルDB）
+    schema: tpch_sf1  # データが存在するスキーマ名
+
+    tables:
+      - name: orders  # ソーステーブル名
+        description: main order tracking table  # テーブルの説明
+
+        columns:
+          - name: o_orderkey  # カラム名
+            description: SF*1,500,000 are sparsely populated  # このカラムの意味・特性の説明
+            tests:  # このカラムに対して実行するテスト
+              - unique     # 一意性のテスト（重複がないか）
+              - not_null   # NULL値がないことを確認するテスト
+
+      - name: lineitem  # 別のソーステーブル
+        description: main lineitem table  # このテーブルの説明
+
+        columns:
+          - name: l_orderkey  # 注文キー（ordersテーブルとリレーションがある）
+            description: Foreign Key to O_ORDERKEY  # orders.o_orderkey に対する外部キー
+            tests:
+              - relationships:  # リレーションシップテスト（外部キー制約のような役割）
+                  to: source('tpch', 'orders')  # 対象の参照先（ordersテーブル）
+                  field: o_orderkey  # 参照先のカラム名
+
