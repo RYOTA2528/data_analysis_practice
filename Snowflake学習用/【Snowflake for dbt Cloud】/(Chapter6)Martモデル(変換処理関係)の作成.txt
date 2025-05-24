@@ -1,0 +1,158 @@
+// Martモデルの実装
+ステージングモデルが構築できたので、モデリングのニーズに合わせてデータを変換し始めることができます。ここでは、2つの変換済みモデルを構築する予定
+
+	・1つは新しい明細項目の計算を実行する中間モデル
+	・新しい明細項目の計算結果を注文レベルで集計するファクトモデル
+	
+
+①新しい明細項目の計算を実行する中間モデル
+models/marts/core/int_order_items.sql
+
+with orders as (
+    -- ステージング済みの注文データを取得
+    select * from {{ ref('stg_tpch_orders') }}
+),
+
+
+line_item as (
+    -- ステージング済みの注文品データを取得
+    select * from {{ ref('stg_tpch_line_items') }}
+)
+
+select 
+    -- 各注文品の一意キー
+    line_item.order_item_key,
+
+    -- 注文に関する情報
+    orders.order_key,
+    orders.customer_key,
+    orders.order_date,
+    orders.status_code as order_status_code,
+
+    -- 注文品に関する情報
+    line_item.part_key,
+    line_item.supplier_key,
+    line_item.return_flag,
+    line_item.line_number,
+    line_item.status_code as order_item_status_code,
+    line_item.ship_date,
+    line_item.commit_date,
+    line_item.receipt_date,
+    line_item.ship_mode,
+    line_item.extended_price,
+    line_item.quantity,
+
+    -- extended_price は line item 全体の合計金額なので、
+    -- 数量で割って1個あたりの基本価格を算出
+    (line_item.extended_price / nullif(line_item.quantity, 0))::decimal(16,2) as base_price,
+
+    -- 割引率（0?1）
+    line_item.discount_percentage,
+
+    -- 割引後の単価
+    (base_price * (1 - line_item.discount_percentage))::decimal(16,2) as discounted_price,
+
+    -- 割引前の売上金額（line item 全体）
+    line_item.extended_price as gross_item_sales_amount,
+
+    -- 割引後の売上金額
+    (line_item.extended_price * (1 - line_item.discount_percentage))::decimal(16,2) as discounted_item_sales_amount,
+
+    -- 割引額（マイナス値として表現）
+    (-1 * line_item.extended_price * line_item.discount_percentage)::decimal(16,2) as item_discount_amount,
+
+    -- 税率（0?1）
+    line_item.tax_rate,
+
+    -- 税額（割引適用後の金額に税率を乗算）
+    ((gross_item_sales_amount + item_discount_amount) * line_item.tax_rate)::decimal(16,2) as item_tax_amount,
+
+    -- 最終的な売上金額（割引・税込み）
+    (
+        gross_item_sales_amount + 
+        item_discount_amount + 
+        item_tax_amount
+    )::decimal(16,2) as net_item_sales_amount
+
+from
+    orders
+inner join line_item
+    -- 注文と注文品を order_key で結合
+    on orders.order_key = line_item.order_key
+
+order by
+    orders.order_date  -- 注文日順に並び替え
+
+
+
+
+②新しい明細項目の計算結果を注文レベルで集計するファクトモデル
+models/marts/core/fct_orders.sql
+
+-- ステージングされた注文テーブルを取得
+with orders as (
+    select * from {{ ref('stg_tpch_orders') }} 
+),
+
+-- 中間モデル（注文明細と売上金額の計算済みデータ）を取得
+order_item as (
+    select * from {{ ref('int_order_items') }}
+),
+
+-- 注文単位で売上・割引・税・純売上を集計
+order_item_summary as (
+    select 
+        order_key,
+        sum(gross_item_sales_amount) as gross_item_sales_amount,  -- 合計売上（割引前）
+        sum(item_discount_amount) as item_discount_amount,        -- 合計割引額
+        sum(item_tax_amount) as item_tax_amount,                  -- 合計税額
+        sum(net_item_sales_amount) as net_item_sales_amount       -- 合計売上（割引・税込）
+    from order_item
+    group by
+        1  -- group by order_key
+),
+
+-- 注文情報と集計データを結合してファクトテーブルを構築
+final as (
+    select 
+        orders.order_key,                 -- 注文番号
+        orders.order_date,               -- 注文日
+        orders.customer_key,             -- 顧客ID
+        orders.status_code,              -- 注文ステータス
+        orders.priority_code,            -- 優先度
+        orders.clerk_name,               -- 担当者名
+        orders.ship_priority,            -- 配送優先度
+
+        1 as order_count,                -- 注文件数（集計時にカウント用）
+        
+        -- 注文単位の売上情報
+        order_item_summary.gross_item_sales_amount,
+        order_item_summary.item_discount_amount,
+        order_item_summary.item_tax_amount,
+        order_item_summary.net_item_sales_amount
+    from
+        orders
+        inner join order_item_summary
+            on orders.order_key = order_item_summary.order_key
+)
+
+-- 最終的な出力
+select 
+    *
+from
+    final
+order by
+    order_date  -- 注文日でソート
+    
+    
+その後、「dbt run --select int_order_items+」を実行しよう！
+
+【補足】    
+dbt run --select int_order_items+ とは？
+要素	説明
+dbt run	dbt にモデルを実行（＝テーブルやビューを再構築）させるコマンド
+--select	特定のモデルだけを選択的に実行するためのオプション
+int_order_items	実行したい 中間モデル名（ここでは明細の計算モデル）
++（グラフ演算子）	そのモデルに依存している下流モデル（ここでは fct_orders）も一緒に実行する指定
+
+

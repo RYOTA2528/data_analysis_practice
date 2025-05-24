@@ -90,3 +90,10 @@ select * from renamed
 
 {% endif %}
 
+
+
+-- すべてのモデルを実行するのではなく、dbt runこのモデルに対して を実行してみましょう。そのためには、コマンドに次のような構文を追加
+
+dbt run --select stg_tpch_nations
+
+
