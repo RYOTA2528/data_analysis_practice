@@ -1,0 +1,92 @@
+ステップまとめ：単一のカスタムテストとドキュメント
+🔧 1. カスタムデータテストの作成
+ファイルパス：
+
+bash
+コピーする
+編集する
+tests/fct_orders_negative_discount_amount.sql
+内容：
+
+sql
+コピーする
+編集する
+--If no discount is given it should be equal to zero 
+--Otherwise it will be negative
+
+select *
+  from {{ ref('fct_orders') }}  
+ where item_discount_amount > 0
+このテストの目的は、item_discount_amount が常に 0 以下であるというビジネスルールの検証です。
+→ item_discount_amount > 0 なら テスト失敗。
+
+🧪 2. テストの実行
+bash
+コピーする
+編集する
+dbt test --select fct_orders
+このコマンドにより、fct_orders モデルに関連付けられた すべてのテスト（YAMLベース + カスタムSQL） が一括で実行されます。
+カスタムテストは、tests/ ディレクトリにあり、 ref() 関数を使用してモデルと接続されているため、自動的に対象に含まれます。
+
+📘 3. Markdownでの説明ドキュメントの作成
+ファイルパス：
+
+bash
+コピーする
+編集する
+models/marts/core/core.md
+内容：
+
+markdown
+コピーする
+編集する
+# the below are descriptions from fct_orders
+
+{% docs gross_item_sales_amount %}
+same as extended_price
+{% enddocs %}
+これにより、YAML で書かれていた以下の記述が解決されます：
+
+yaml
+コピーする
+編集する
+- name: gross_item_sales_amount
+  description: '{{ doc("gross_item_sales_amount") }}'
+Markdownにすることで：
+
+複雑な説明の整形がしやすくなる
+
+同じブロックを別のモデルでも再利用できる
+
+🌐 4. ドキュメントの生成と閲覧
+bash
+コピーする
+編集する
+dbt docs generate
+生成後：
+
+bash
+コピーする
+編集する
+dbt docs serve
+📚 サイトをブラウザで開き、検索バーから fct_orders を探します。
+
+表示される内容：
+モデルレベルの説明
+
+各列の説明（YAML記述 + Markdownブロック）
+
+適用されているテスト
+
+系統グラフ（他のモデルとの依存関係）
+
+📌 5. コミットとプッシュ
+例：
+
+sql
+コピーする
+編集する
+git add .
+git commit -m "Add tests and docs for fct_orders"
+git push
+これでこのセクションの作業がチームに共有され、レビューやCI環境でのテストにも含まれるようになります。
