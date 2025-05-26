@@ -1,0 +1,66 @@
+1. dbt のテスト
+dbtのテストには2種類あります。
+
+? 汎用テスト（Generic Tests）
+YAMLファイル内で定義され、以下のように記述します。
+
+yaml
+
+models:
+  - name: int_order_items
+    columns:
+      - name: order_item_key
+        tests:
+          - not_null
+          - unique
+      - name: quantity
+        tests:
+          - not_null
+      - name: base_price
+        tests:
+          - not_null
+          
+          
+? 特異テスト（Singular Tests）
+tests/ ディレクトリに SQL を書きます。失敗する行を返すクエリを書くだけです。
+
+例: 割引率が 0?1 の範囲外になっていないかを検証するテスト
+
+sql
+
+-- tests/test_discount_percentage_bounds.sql
+SELECT *
+FROM {{ ref('int_order_items') }}
+WHERE discount_percentage < 0 OR discount_percentage > 1
+このファイルを作成したら、dbt test コマンドで実行可能になります。
+
+
+
+-------------------------------------------------------------------------------------------------
+
+2. dbt のドキュメント化
+? モデルやカラムの説明は .yml に記述
+yaml
+
+models:
+  - name: int_order_items
+    description: "各注文とそのアイテムの詳細な構成。売上、割引、税の情報を含む。"
+    columns:
+      - name: order_item_key
+        description: "注文アイテムの一意な識別子"
+      - name: order_key
+        description: "注文の識別子。親注文と結びつける。"
+      - name: discounted_price
+        description: "割引後の単価"
+? ドキュメントを生成して閲覧する
+ドキュメントを生成：
+
+bash
+
+dbt docs generate
+ローカルで表示：
+
+bash
+
+dbt docs serve
+Webブラウザで http://localhost:8080 にアクセスすれば、モデルやカラムの説明が含まれたナビゲーション付きのUIを確認できます。
