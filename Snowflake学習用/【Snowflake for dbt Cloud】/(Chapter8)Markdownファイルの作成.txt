@@ -1,0 +1,29 @@
+dbtの**ドキュメントブロック（{% docs ... %}）**を用いて、fct_orders モデル内の gross_item_sales_amount 列の説明を定義しています。
+
+? ファイルパス：
+models/marts/core/core.md
+
+? ファイル内容：
+
+markdown
+コピーする
+編集する
+# the below are descriptions from fct_orders
+
+{% docs gross_item_sales_amount %}
+same as extended_price
+{% enddocs %}
+? どう機能するのか？
+この core.md ファイルは、fct_orders.yml のこの部分と接続しています：
+
+yaml
+コピーする
+編集する
+- name: gross_item_sales_amount
+  description: '{{ doc("gross_item_sales_amount") }}'
+YAML で指定された doc("gross_item_sales_amount") は、
+
+Markdown ファイル内の {% docs gross_item_sales_amount %}...{% enddocs %} とマッチします。
+
+これにより、ドキュメントビルド時（dbt docs generate → dbt docs serve）、その列の説明として core.md 内の記述が表示されます。
+
