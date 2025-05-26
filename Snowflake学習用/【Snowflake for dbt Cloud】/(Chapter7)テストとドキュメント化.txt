@@ -64,3 +64,80 @@ bash
 
 dbt docs serve
 Webブラウザで http://localhost:8080 にアクセスすれば、モデルやカラムの説明が含まれたナビゲーション付きのUIを確認できます。
+
+
+-------------------------------------------------------------------------------------------------------------------
+
+models/marts/core/core.yml
+
+version: 2
+
+models:
+  - name: fct_orders
+    description: orders fact table  # 注文に関するファクトテーブル
+    columns:
+      - name: order_key
+        description: primary key of the model  # モデルの主キー
+        tests:
+          - unique  # 重複してはいけない
+          - not_null  # NULLは許容しない
+          - relationships:  # 外部キー制約のテスト（警告レベル）
+              to: ref('stg_tpch_orders')  # 対象テーブル
+              field: order_key  # 対象フィールド
+              severity: warn  # 失敗してもエラーにしない（警告扱い）
+
+      - name: customer_key
+        description: foreign key for customers  # 顧客テーブルとの外部キー
+
+      - name: order_date
+        description: date of the order  # 注文日
+
+      - name: status_code
+        description: status of the order  # 注文のステータス（P, O, F など）
+        tests:
+          - accepted_values:  # 許容される値のテスト
+              values: ['P','O','F']  # P=保留, O=受注, F=完了などを想定
+
+      - name: priority_code
+        description: code associated with the order  # 優先度を示すコード
+
+      - name: clerk_name
+        description: id of the clerk  # 担当者（事務員）のIDや名前
+
+      - name: ship_priority
+        description: numeric representation of the shipping priority, zero being the default
+        # 出荷優先度の数値表現。通常は 0 が標準値
+
+      - name: order_count
+        description: count of order  # 注文数の集計（件数）
+
+      - name: gross_item_sales_amount
+        description: '{{ doc("gross_item_sales_amount") }}'  # 商品売上総額。doc()で別ファイルに定義
+
+      - name: item_discount_amount
+        description: item level discount amount. this is always less than or equal to zero
+        # 商品単位の割引金額。常に0以下である必要がある
+
+      - name: item_tax_amount
+        description: item level tax total  # 商品単位の税金額
+
+      - name: net_item_sales_amount
+        description: the net total which factors in discount and tax
+        # 割引と税金を考慮した最終的な売上金額（純額）
+
+
+
+（補足）
+列ごとの説明とテスト
+各列には以下の2つが記述できます：
+
+description: この列が何を意味するかの説明（プレーンテキスト or Jinjaのdocブロック）
+
+tests: データ品質を保つためのルール（汎用または特異テスト）
+
+? テスト例の要点：
+テスト	意味
+unique	重複しないこと（主キーなど）
+not_null	NULLが許容されない
+relationships	外部キーが他のモデルのキーと一致すること
+accepted_values	値が特定のリストに含まれるかどうか
