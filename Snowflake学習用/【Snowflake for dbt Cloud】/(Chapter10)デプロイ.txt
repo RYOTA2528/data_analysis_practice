@@ -1,0 +1,58 @@
+// 本番環境へのデプロイに向けた最終準備とプロセスを整理
+
+(ブランチ運用と環境の切り替えに関するベストプラクティスの要点)
+ 開発環境の役割と構成
+? 現在の状況（開発環境）
+作業：dbt Cloud IDE でモデル、テスト、ドキュメントを作成
+
+ブランチ：feature ブランチ（例：feature/fct_orders）
+
+接続：Snowflake の開発スキーマ
+
+例：PC_DBT_DB.dbt_dev_yourname
+
+目的：コードやデータ変更の安全な試行とテスト
+
+? これは他の開発者の作業と衝突せず、下流のプロダクト環境を汚染しないための隔離されたサンドボックスです。
+
+? 本番環境へのデプロイ手順
+① ブランチの昇格：開発 → 本番
+Gitマージ操作を実行します（GUIまたはコマンドライン）。
+
+bash
+
+git checkout main
+git merge feature/fct_orders
+git push origin main
+通常はPull Request → コードレビュー → Merge の流れですが、ワークショップでは手動マージでも問題ありません。
+
+これで main ブランチにコードが反映され、本番デプロイ可能な状態になります。
+
+② 本番環境へのデプロイ（ジョブ実行）
+dbt Cloud では、Partner Connect により事前構成されたプロジェクトには、すでに以下のものがセットアップ済みです：
+
+main ブランチに紐づく 本番環境
+
+production スケジュールまたは 手動トリガーできるジョブ
+
+? 実行手順（UIベース）：
+dbt Cloud 左メニューで Deploy → Jobs に移動
+
+Production または Default という名前のジョブを選択
+
+Run now ボタンをクリックして即時実行
+
+? このジョブでは以下が行われます：
+
+mainブランチのモデルコードを使用
+
+Snowflakeの本番スキーマでモデルを再構築
+
+全てのテスト (dbt test) を実行
+
+すべてのドキュメントは dbt docs generate により更新可能
+
+? 環境の切替まとめ（図式化）
+環境	Gitブランチ	Snowflakeスキーマ	用途
+開発環境	feature/...	dbt_dev_<user>	コーディングと検証
+本番環境	main	dbt_prod（例）	本番利用・運用対象
