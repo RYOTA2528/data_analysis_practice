@@ -3,6 +3,11 @@
 {{return(["bank_transfer", "credit_card", "gift_card"])}}
 {% endmacro %}
 
+
+{% macro get_payment_methods() %}
+{{return(["aaa", "bbb", "ccc"])}}
+{% endmacro %}
+
 -- 上記を使用して以下のように変更可能
 {%- set payment_methods = get_payment_methods() -%}
 
@@ -14,3 +19,10 @@ sum(case when payment_method = '{{payment_method}}' then amount end) as {{paymen
 {% endfor %}
 from {{ ref('raw_payments') }}
 group by 1
+
+
+
+
+select
+order_id,
+{% for payment_method in payment_methods -%}
