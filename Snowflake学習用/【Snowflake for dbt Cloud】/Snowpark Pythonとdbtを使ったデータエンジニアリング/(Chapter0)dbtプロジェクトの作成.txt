@@ -1,0 +1,32 @@
+dbt initコマンド実行で以下を設定
+
+
+スノーフレーク
+Snowflake アカウント。
+DEMO_DB という名前の Snowflake データベース。
+適切な権限を持つSnowflakeユーザーが作成されました。このユーザーには、DEMO_DBデータベースにオブジェクトを作成する権限が必要です。
+アナコンダ
+お使いのコンピュータにAnacondaがインストールされています。詳細については、Anacondaのインストール手順をご覧ください。
+dbt
+お使いのコンピュータにdbtがインストールされていることをご確認ください。Pythonモデルはdbtバージョン1.3で初めて導入されたため、dbtバージョン1.3以降をインストールしてください。以下の手順に従ってください（< <env-name>Anaconda環境名>は任意の名前です）。
+conda create -n <env-name> python=3.8
+conda activate <env-name>
+pip install dbt-core dbt-snowflake（またはpip install --upgrade dbt-core dbt-snowflakeアップグレードの場合）
+統合開発環境（IDE）
+お気に入りのIDEがコンピューターにインストールされていること。お気に入りのIDEがまだない場合は、優れた無料のオープンソースであるVisual Studio Codeをお勧めします。
+
+
+
+注: 入力した接続詳細は、デフォルトの場所にある dbt 接続プロファイルに保存されています
+
+→~/.dbt/profiles.yml
+
+
+その後「dbt run」のコマンドを実行し Snowflake に次のオブジェクトが作成されます
+
+→DEMO_DB.DEMO_SCHEMA。
+
+テーブル：my_first_dbt_model
+ビュー：my_second_dbt_model
+
+
