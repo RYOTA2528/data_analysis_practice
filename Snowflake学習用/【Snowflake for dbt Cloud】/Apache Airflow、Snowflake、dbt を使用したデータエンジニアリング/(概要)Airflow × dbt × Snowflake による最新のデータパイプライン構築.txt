@@ -1,0 +1,39 @@
+目的（What you’ll achieve）
+Airflow で dbt をスケジュール実行する実用的なパイプラインを構築し、Snowflake にデータを流し込むこと。
+
+
+学習内容
+Airflow を使ったジョブスケジューリング	:
+DAG を定義してスケジューラとして Airflow を使う方法
+
+dbt を Airflow で実行する方法:	
+CLI モードで dbt を実行するオペレーターを書く
+
+Snowflake との統合:	
+dbt モデルの実行結果を Snowflake に格納する
+
+オープンソースツールの統合:	
+Airflow、dbt、Docker、GitHub、VS Code の連携
+
+
+
+前提条件（準備しておくもの）
+ツール	必要な理由
+Snowflakeアカウント	データを保存・処理するクラウド DWH
+GitHub アカウント & リポジトリ	プロジェクトコードを管理（後で CI/CD にも発展可能）
+IDE（例：VS Code）	コーディングやバージョン管理を行う
+Docker Desktop	Airflow をコンテナとして実行
+Python/dbt の基本知識	実行スクリプトや変換ロジックを書くため
+
+
+
+ステップバイステップ：構築手順の概要
+
+
+Snowflake アカウントを作成（必要に応じて DEMO_DB 作成と権限付与）
+
+GitHub リポジトリを作成してローカルに clone
+
+VS Code（または IDE）でプロジェクトを開く
+
+Docker Desktop をインストールして起動
