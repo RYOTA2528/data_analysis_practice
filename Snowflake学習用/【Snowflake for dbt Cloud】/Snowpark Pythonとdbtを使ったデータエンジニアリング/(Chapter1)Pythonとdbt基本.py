@@ -1,10 +1,10 @@
 -- 基本操作
-model/my_python_model.python
+model/my_first_python_model.py
 
-def model(dbt, session)
-    my_sql_model_df = dbt.ref("my_sql_model")
+def model(dbt, session):
+    dbt.config(materialized = "table")
 
-    final_df = 
+    df = dbt.ref("my_first_dbt_model")  # dbt.ref()SQLモデルでは、Jinjaの同等の関数とdbt.source()同様
 
-    return final_df
+    return df
 
