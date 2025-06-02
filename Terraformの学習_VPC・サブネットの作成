@@ -1,0 +1,95 @@
+
+■ network.tf ■
+#-------------------------------------------------------
+# VPC
+#-------------------------------------------------------
+resource "aws_vpc" "vpc" {
+  cidr_block = "192.168.0.0/20"
+  instance_tenancy = "default"
+  enable_dns_support = true
+  enable_dns_hostnames = true
+  assign_generated_ipv6_cidr_block = false
+
+#以下は先ほどまでに定義したmain.tfにあるvariable並びにterraform.tfvarsのファイルにある変数から取得してる
+  tags = {
+    Name = "${var.project}-${var.environment}-vpc"
+    Project = var.project
+    Env = var.environment
+  }
+}
+
+# 余談ですが、"aws_vpc" "vpc"　の"vpc"はTerraformの中での任意な識別子です。
+
+
+#-------------------------------------------------------
+# Subnet
+#-------------------------------------------------------
+resource "aws_subnet" "public_subnet_1a" {
+  vpc_id = aws_vpc.vpc.id
+  availability_zone = "ap-northeast-1a"
+  cidr_block = "197.168.1.0/24"
+  map_public_ip_on_launch = true #trueで自動的にパブリックIPを作成
+
+  tags = {
+    Name = "${var.project}-${var.environment}-public-subnet-1a"
+    Project = var.project
+    Env = var.environment
+    Type = "public"
+  }
+
+}
+
+resource "aws_subnet" "public_private_1a" {
+  vpc_id = aws_vpc.vpc.id
+  availability_zone = "ap-northeast-1a"
+  cidr_block = "197.168.1.0/24"
+  map_public_ip_on_launch = true #trueで自動的にパブリックIPを作成
+
+  tags = {
+    Name = "${var.project}-${var.environment}-public-subnet-1a"
+    Project = var.project
+    Env = var.environment
+    Type = "public"
+  }
+
+}
+
+
+resource "aws_subnet" "public_subnet_1c" {
+  vpc_id = aws_vpc.vpc.id
+  availability_zone = "ap-northeast-1a"
+  cidr_block = "197.168.1.0/24"
+  map_public_ip_on_launch = true #trueで自動的にパブリックIPを作成
+
+  tags = {
+    Name = "${var.project}-${var.environment}-public-subnet-1a"
+    Project = var.project
+    Env = var.environment
+    Type = "public"
+  }
+
+}
+
+
+resource "aws_subnet" "public_private_1c" {
+  vpc_id = aws_vpc.vpc.id
+  availability_zone = "ap-northeast-1a"
+  cidr_block = "197.168.1.0/24"
+  map_public_ip_on_launch = true #trueで自動的にパブリックIPを作成
+
+  tags = {
+    Name = "${var.project}-${var.environment}-public-subnet-1a"
+    Project = var.project
+    Env = var.environment
+    Type = "public"
+  }
+
+}
+
+
+■ コマンド ■
+terraform fmt
+↓
+terrafrom plan
+↓
+terraform apply -auto-approve ←"y"の確認せずに進める
