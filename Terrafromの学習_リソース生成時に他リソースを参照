@@ -1,0 +1,31 @@
+# VPC (Virtual Private Cloud) の定義
+resource "aws_vpc" "vpc" {
+  # VPCのCIDRブロックを指定 (ここでは 192.168.0.0/20)
+  # 192.168.0.0/20 は、IPアドレスの範囲が 192.168.0.0 から 192.168.15.255 となり、4096個のIPアドレスを提供します。
+  cidr_block = "192.168.0.0/20"
+
+  # インスタンステナンシーの設定。デフォルトは "default" で、専用ホストで実行されない。
+  instance_tenancy = "default"
+
+  # DNSサポートを有効にする設定 (VPC内のインスタンスがDNS解決を行えるようにする)
+  enable_dns_support = true
+
+  # VPC内でDNSホスト名を有効にする設定
+  enable_dns_hostnames = true
+}
+
+# サブネットの定義 (パブリックサブネット 1a)
+resource "aws_subnet" "public_subnet_1a" {
+  # VPC ID を指定 (上で定義した VPC リソースを参照)
+  vpc_id = aws_vpc.vpc.id
+
+  # サブネットを配置するアベイラビリティゾーンを指定 (東京リージョンの 1a ゾーン)
+  availability_zone = "ap-northeast-1a"
+
+  # サブネットのCIDRブロックを指定 (ここでは 192.168.1.0/24)
+  # 192.168.1.0/24 は、256個のIPアドレス（192.168.1.0 から 192.168.1.255）を提供します。
+  cidr_block = "192.168.1.0/24"
+
+  # 新しいインスタンスがこのサブネットで起動する際にパブリックIPを自動で割り当てる設定
+  map_public_ip_on_launch = true
+}
