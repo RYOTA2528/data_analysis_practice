@@ -85,4 +85,16 @@ terrform.tfvarsという名前にしておけば、terrform apply --XXがいら�
 # ③変数を指定したコマンド実行
 terrform apply -var message="Hello World !"
 
+---------------------------------------------------
+#outputブロックの記載方法を学ぶ
+-- 外部参照できるように設けられています。
+resource "aws_instance" "hello world" {
+    ami = "ami-XXXXX"
+instance_type = "t2.micro"
+}
+
+output "ec2_instance" {
+    value = aws_instance.hello-world.id
+}
+
 
