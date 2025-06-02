@@ -5,3 +5,11 @@ terraform console
 
 -- 変数を利用したい場合、変数定義された.tfファイルがあるディレクトリで実行する必要がある
 
+CMD当、Terrafromのコンソールで以下のように実施
+$ terraform console
+>floor(4.9)
+4
+
+$substr("Hello world", 1, 4) #１文字目を飛ばし４つ取得
+"ello"
+>
