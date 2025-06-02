@@ -59,3 +59,25 @@ resource "aws_security_group_rule" "web_out_tcp3000"{
   to_port = 3000
   cidr_blocks = ["0.0.0.0/0"]
 }
+
+#-------------------------------------------------------
+# APP Security Group
+#-------------------------------------------------------
+
+# APPServer用のセキュリティーグループ
+resource "aws_security_group" "app_sg" {
+  name = "${var.project}-${var.environment}-web-sg"
+  description = "APPサーバー用のセキュリティーグループ"
+  vpc_id = aws_vpc.vpc.id #別ファイルだとしても、同一ディレクトリであれば使用可能
+
+  tags = {
+    Name = "${var.project}-${var.environment}-app-sg"
+    Project = var.project
+    Env = var.environment
+    Type = "public"
+  }
+}
+
+# APPServer用のセキュリティーグループルール
+
+#####TAB#########
