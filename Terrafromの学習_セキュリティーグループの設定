@@ -81,3 +81,69 @@ resource "aws_security_group" "app_sg" {
 # APPServer用のセキュリティーグループルール
 
 #####TAB#########
+
+#-------------------------------------------------------
+# 運用管理用 Server Security Group
+#-------------------------------------------------------
+#(補足)
+ #踏み台サーバです。ネットワーク側のIN:TCP3000、クライアント側のIN:SSH、OUT:HTTP/HTTPS
+
+# 運用管理用 Serverのセキュリティーグループ
+resource "aws_security_group" "opmng_sg" {
+  name = "${var.project}-${var.environment}-opmng-sg"
+  description = "運用管理用 Serverのセキュリティーグループ"
+  vpc_id = aws_vpc.vpc.id #別ファイルだとしても、同一ディレクトリであれば使用可能
+
+  tags = {
+    Name = "${var.project}-${var.environment}-opmng-sg"
+    Project = var.project
+    Env = var.environment
+    Type = "public"
+  }
+}
+
+
+
+# 運用管理用 Serverのセキュリティーグループルール(インバウンド_SSH)
+resource "aws_security_group_rule" "opmng_in_ssh"{
+  security_group_id = aws_security_group.opmng_sg.id
+  type = "ingress"
+  protocol = "tcp"
+  from_port = 22
+  to_port = 22
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+
+# 運用管理用 Serverのセキュリティーグループルール(インバウンド_TCP3000)
+resource "aws_security_group_rule" "opmng_in_tcp3000"{
+  security_group_id = aws_security_group.opmng_sg.id
+  type = "ingress"
+  protocol = "tcp"
+  from_port = 3000
+  to_port = 3000
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+
+# 運用管理用 Serverのセキュリティーグループルール(アウトバウンド_HTTP)
+resource "aws_security_group_rule" "opmng_out_http"{
+  security_group_id = aws_security_group.opmng_sg.id
+  type = "egress"
+  protocol = "tcp"
+  from_port = 80
+  to_port = 80
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+
+# 運用管理用 Serverのセキュリティーグループルール(アウトバウンド_HTTPS)
+resource "aws_security_group_rule" "opmng_out_https"{
+  security_group_id = aws_security_group.opmng_sg.id
+  type = "egress"
+  protocol = "tcp"
+  from_port = 443
+  to_port = 443
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
