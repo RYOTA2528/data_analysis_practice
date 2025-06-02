@@ -1,0 +1,88 @@
+# object (キー・バリュー)
+variable "obj_sample" {
+    type = object ({
+        name = string
+        age = number
+    })
+    default = {
+        name = "tanaka"
+        age = 28
+    }
+}
+
+
+username = var.obj_sample.name
+
+
+# tuple
+variable "tuple_sample" {
+    type = tuple([
+        string, number
+    ])
+    default = ["tanaka", 20]
+}
+username = var.tuple_sample[0]
+
+# list
+variable "list_sample" {
+    type = list(string)
+    default = ["tanaka", "sato"]
+}
+username = var.list_sample[0]
+
+
+# map(キーが文字列,バリューが配列)
+variable "map_sample" {
+    type = map(string)
+    default = {
+        "High" = "m5.2xlrage"
+        "Mid" = "m5.large"
+        "Low" = "t2.micro"
+    }
+}
+instance = var.map_sample.High
+
+
+# set(バリューの重複が排除される配列)
+variable "set_sample" {
+    type = set(string)
+    default = [
+        "tanaka"
+        "sato"
+        "tanaka"
+        "sato"
+    ]
+}
+
+[for itm in set_sample : itm] #結果重複が排除されてる
+
+-------------------------------------------
+
+#variableを実際に外部から変更してみる
+
+#①環境変数による変更
+variable = "message" {
+    type = string
+    default = "nothing"
+}
+
+以下ターミナルで打ち込み
+ export TF_VAR_message="Hello World !" 
+ 最後に
+terrform apply
+
+
+# ②変数ファイルによる変更
+
+#拡張子(terrform.tfvars)に以下記載
+message = "Hello World !"
+最後に
+terrform apply
+
+terrform.tfvarsという名前にしておけば、terrform apply --XXがいらない
+
+
+# ③変数を指定したコマンド実行
+terrform apply -var message="Hello World !"
+
+
