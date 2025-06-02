@@ -1,0 +1,21 @@
+
+■ network.tf ■
+#-------------------------------------------------------
+# VPC
+#-------------------------------------------------------
+resource "aws_vpc" "vpc" {
+  cidr_block = "192.168.0.0/20"
+  instance_tenancy = "default"
+  enable_dns_support = true
+  enable_dns_hostnames = true
+  assign_generated_ipv6_cidr_block = false
+
+#以下は先ほどまでに定義したmain.tfにあるvariable並びにterraform.tfvarsのファイルにある変数から取得してる
+  tags = {
+    Name = "${var.project}-${var.environment}-vpc"
+    Project = var.project
+    Env = var.environment
+  }
+}
+
+# 余談ですが、"aws_vpc" "vpc"　の"vpc"はTerraformの中での任意な識別子です。
