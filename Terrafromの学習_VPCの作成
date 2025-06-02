@@ -19,3 +19,11 @@ resource "aws_vpc" "vpc" {
 }
 
 # 余談ですが、"aws_vpc" "vpc"　の"vpc"はTerraformの中での任意な識別子です。
+
+
+■ コマンド ■
+terraform fmt
+↓
+terrafrom plan
+↓
+terraform apply -auto-approve ←"y"の確認せずに進める
