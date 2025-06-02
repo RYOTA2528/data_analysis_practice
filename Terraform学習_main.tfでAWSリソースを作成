@@ -1,0 +1,25 @@
+# main.tf に記載
+ -- 以下の例ではEC2インスタンスの作成並びにNginxのインストールと起動までを実行
+provider "aws" {
+    profile = "terraform"
+    region = "ap-northeast-1"
+}
+
+resource "aws_instance" "hello-world" {
+    ami = "ami-XXXXXXXX"  #amiはEC2インスタンスで確認(EC2立ち上げる際のAmazon Linuxイメージにある)
+    instnace_type = "t2.micro"
+
+    tags = {
+      Name = "Helloworld"
+    }
+
+    user_data = <<EOF
+#!/bin/bash
+amzon-linux-extras install -y nginx1.12
+systemctl start nginx
+EOF
+}
+
+
+
+
