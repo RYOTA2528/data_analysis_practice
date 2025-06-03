@@ -1,0 +1,19 @@
+#-------------------------------------------------------
+# RDS parameter group
+#-------------------------------------------------------
+#パラメータグループに文字セットでutf8bm4を設定する
+resource "aws_db_parameter_group" "mysql_stadalone_parmetergroup" {
+  name = "${var.project}-${var.environment}-mysql-standalone-parametergroup"
+  family = "mysql8.0"
+
+  parameter {
+    name ="character_set_database"
+    value = "utf8mb4"
+  }
+
+  parameter {
+    name ="chracter_set_server"
+    value = "utf8mb4"
+  }
+
+}
