@@ -12,3 +12,45 @@
 ③ sudo yum install ansible (左記でできない場合は、sudo amazon-linux-extras install ansible2)
 ↓
 ④ ansible --version
+
+## 疎通確認
+① chmod 400 ec2-key.pem で所有者のみに読み込み権限を付与（デフォルトだと640のため）
+↓
+② インベントリーファイルをvimで作成(vim inventory.txt)
+#以下内容の記載
+
+ansible-dev-target1 ansible_host=18.181.250.245 ansible connection=ssh ansible user=ec2-user # dev1ホストマシンへマスターノードからssh接続する
+ansible-dev-target1 ansible_host=3.112.21.90 ansible connection=ssh ansible user=ec2-user
+ansible-test-target1 ansible_host=18.183.129.63 ansible connection=ssh ansible user=ec2-user
+ansible-test-target1 ansible_host=35.78.92.193 ansible connection=ssh ansible user=ec2-user
+↓
+③ ansible ansible-dev-target1 -m ping -i inventory.txt でまずは疎通確認（ここではエラー）
+↓
+④ ssh-agent bash マスターノードからターゲットノードに接続するためにはssh-agentの起動が必須
+↓
+⑤ sudo cp ec2-key.pem ~/.ssh/
+↓
+⑥ sudo chmod 755 ~/.ssh/ で権限を付与
+↓
+⑦ ssh-add ~/.ssh/ec2-key.pem エージェントのほうに.ssh/にある秘密鍵を追加
+↓
+⑧ ansible ansible-dev-target1 -m ping -i inventory.txt で同様に疎通確認
+※これを各ターゲットごとに実施することも可能だがvim inventory.txt内でグループを作成し一括実行可能
+↓
+⑨
+[devservers]
+ansible-dev-target1 ansible_host=18.181.250.245 ansible connection=ssh ansible user=ec2-user # dev1ホストマシンへマスターノードからssh接続する
+ansible-dev-target1 ansible_host=3.112.21.90 ansible connection=ssh ansible user=ec2-user
+[testservers]
+ansible-test-target1 ansible_host=18.183.129.63 ansible connection=ssh ansible user=ec2-user
+ansible-test-target1 ansible_host=35.78.92.193 ansible connection=ssh ansible user=ec2-user
+↓
+⑩ ansible devservers -m ping -i inventory.txt で実行できる
+          (testservers)
+↓
+（補足）もしも接続に失敗するなら
+cd /etc/ansible
+sudo vim ansible.cfg
+・・・
+#host_key\cheking = False ※これのコメントアウトを外す
+・・・
