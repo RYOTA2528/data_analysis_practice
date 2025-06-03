@@ -1,0 +1,14 @@
+## 以下、環境について
+# EC2インスタンスを計５台用意
+# 1台はマスターノード、4台がターゲットノード(dev用2台、test用2台)
+#ここで作成するキーペアのpemキーは、vimコマンドでマスターノード事態に持たせておくこと。
+# ↑理由：マスターノードから各ターゲットノードにssh接続するため。（AMIによる複製のため同様のpemで入れる）
+
+## マスターノードの事前準備
+① Teratermにてsshで接続（EC2のIPアドレスをコピーし接続）
+↓
+② vim ec2_key.pem　で先ほどEC2作成の際に作成したec2_key.pemの中身をコピーしてはる。
+↓
+③ sudo yum install ansible (左記でできない場合は、sudo amazon-linux-extras install ansible2)
+↓
+④ ansible --version
