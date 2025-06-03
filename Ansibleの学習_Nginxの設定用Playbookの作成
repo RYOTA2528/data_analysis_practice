@@ -1,0 +1,35 @@
+# install Nginx using Ansible
+# Start and Enable Nginx
+# Check the status of Nginx
+# Collect host information
+- name: Setup nginx server on myserver list (host group)
+  hosts:
+    - devservers
+    - testservers
+  become: True #plyabook実行時に権限エラーを防ぐため
+  tasks:
+    - name: Install the latest version of nginx
+      command: amazon-linux-extras install nginx -y
+      
+
+    - name: Start nginx service
+      service:
+        name: nginx
+        state: started
+        
+        
+
+    - name: Enable nginx service #自動起動の有効化
+      service:
+        name: nginx
+        enabled: yes
+        
+        
+
+    - name: Get nginx Installed version #インストールしたNginxのversion取得
+      command: nginx -v
+      
+
+    - name: Get status of nginx service #Nginxの状態取得取得
+      command: systemctl status nginx
+      
