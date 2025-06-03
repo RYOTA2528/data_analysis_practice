@@ -1,4 +1,4 @@
-# Playbookの作法
+# Playbookの作法_1
 
 
 - name: Setup nginx server on my list
@@ -19,3 +19,22 @@
  #メモ
  #・上記構成要素は4つ。hosts: become: command: service: これらのモジュールを検索し調べることが大切
  
+
+# Playbookの作法_2
+
+- name: Setup nginx server on my list  # プレイブック名：Nginxサーバのセットアップを行う
+  become: true                         # rootユーザーで実行（sudoを有効にする）
+  hosts: all                           # 対象ホスト（明示されていなかったので追加。必要に応じて変更）
+  tasks:
+    - name: Ansible copy file to remote server  # HTMLファイルをリモートサーバへコピー
+      copy:
+        content: | #複数文字列を指定する場合は|を使用する必要がある。
+          <html>
+          <body>
+          <h1>Yamlサンプル</h1>
+          </body>
+          </html>
+        dest: "/usr/share/nginx/html/index.html"  # nginxのデフォルト公開ディレクトリに配置
+
+    - name: Run a script
+  script: "#!/bin/bash\ncp index.html /html/"
