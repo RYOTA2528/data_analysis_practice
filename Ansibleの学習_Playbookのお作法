@@ -1,0 +1,21 @@
+# Playbookの作法
+
+
+- name: Setup nginx server on my list
+  hosts:
+    - devservers
+  become: True
+  
+  tasks:
+    - name: Install the latest version of nginx
+      command: amazon-linux-extras install niginx1 -y
+      
+    - name: Start nginx service
+      service:
+        name: nginx
+        state: started
+        
+        
+ #メモ
+ #・上記構成要素は4つ。hosts: become: command: service: これらのモジュールを検索し調べることが大切
+ 
