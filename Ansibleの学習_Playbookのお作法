@@ -38,3 +38,29 @@
 
     - name: Run a script
   script: "#!/bin/bash\ncp index.html /html/"
+
+
+# Playbookの作法_3
+- name: Setup web server and db server
+  hosts:
+    - devservers
+  tasks:
+    - name: Install the latest version of nginx
+      command: amazon-linux-extras install nginx1 -y
+    - name: Start nginx service
+      service:
+        name: nginx
+        state: started
+######################################################
+    - name: Install PostgreSQL
+      yum: 
+        name: postgresql-server
+        state: latest
+    - name: Start PostgreSQL
+      service:
+        name: postgresql
+        state: started
+
+############でそれぞれyamlファイルを以下のようにわけるのが基本
+web_server_role.yml (タスク分割&ロール名付与)
+db_server_role.yml (タスク分割&ロール名付与)
