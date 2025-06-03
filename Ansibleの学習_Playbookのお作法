@@ -62,5 +62,13 @@
         state: started
 
 ############でそれぞれyamlファイルを以下のようにわけるのが基本
-web_server_role.yml (タスク分割&ロール名付与)
-db_server_role.yml (タスク分割&ロール名付与)
+# web_server_role.yml (タスク分割&ロール名付与)
+# db_server_role.yml (タスク分割&ロール名付与)
+
+#また、上記roleとして切り出したため以下のように呼び出しが可能
+- name: Setup nginx server on my list
+  hosts:
+    - devservers
+  roles:
+    - web_server_role
+    - db_server_role
