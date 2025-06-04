@@ -8,12 +8,15 @@
   #  - testservers  #※ここをコメントアウトしておけば開発のみにinstall可能
   become: True #plyabook実行時に権限エラーを防ぐため
   vars:
-    html_path: "/usr/share/nginx/html/" #変数定義すり
+    html_path: "/usr/share/nginx/html/" #内部変数定義
   tasks:
     - name: Install the latest version of nginx
       command: amazon-linux-extras install nginx -y
-      
 
+　　- name: Read external varia  file #外部変数定義(vars.yamlに内部変数定義同様html_path:で記載)
+      include_vars: vars.yaml
+
+   
     - name: Start nginx service
       service:
         name: nginx
