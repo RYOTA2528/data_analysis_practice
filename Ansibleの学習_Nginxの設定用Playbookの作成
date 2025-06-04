@@ -34,7 +34,7 @@
       command: systemctl status nginx
 
 
-### 上記設定が終わり次第まずはhostファイルの修正を実施
+### 上記設定が終わり次第hostファイルの修正し「hostファイル経由でのplaybookの実施」
 #TeraTermでマスターノードへssh接続
 ↓
 ①sudo vim /etc/ansible/hosts
@@ -63,3 +63,18 @@ ssh-agent bash
 ⑥ssh-add ~/.ssh/ec2-key.pem
 ↓
 ⑦再実行 ansible-playbook install_nginx.yaml -v
+
+
+### 「インベントリファイル(作成済み)でのplaybookの実施」
+①
+rm install nginxでvim install_nginx.yamlでまた再度上書き
+↓
+cat inventory.txt
+[devservers]
+ansible-dev-target1 ansible_host=18.181.250.245 ansible connection=ssh ansible user=ec2-user # dev1ホストマシンへマスターノードからssh接続する
+ansible-dev-target1 ansible_host=3.112.21.90 ansible connection=ssh ansible user=ec2-user
+[testservers]
+ansible-test-target1 ansible_host=18.183.129.63 ansible connection=ssh ansible user=ec2-user
+ansible-test-target1 ansible_host=35.78.92.193 ansible connection=ssh ansible user=ec2-user
+↓
+②ansible-playbook -i inventory.txt install_nginx.yaml -v （これでインベントリファイル経由での実行）
