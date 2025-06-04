@@ -33,6 +33,15 @@
     - name: Get status of nginx service #Nginxの状態取得取得
       command: systemctl status nginx
 
+    - name: Create directory
+      file:
+        path: /home/ec2-user/filemodule
+        state: directory
+
+    - name: Create file
+      file:
+        path: /home/ec2-user/filemodule/filemodule.txt
+        state: touch
 
 ### 上記設定が終わり次第hostファイルの修正し「hostファイル経由でのplaybookの実施」
 #TeraTermでマスターノードへssh接続
