@@ -1,0 +1,33 @@
+Resources:
+  S3bucket: #自分で決められる
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub glue-snowflake-lab-${AWS::AccountId}
+  GlueSnowflakeLabRole: #自分で決められる
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - glue.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+        - arn:aws:iam::aws:policy/AWSGlueConsoleFullAccess
+Outputs:
+  S3BucketName:
+    Description: S3 Bucket Name
+    Value: !Sub 'glue-snowflake-lab-${AWS::AccountId}'
+  GlueIAMRole:
+    Description: IAM Role for Glue Snowflake Workshop
+    Value:
+      Ref: GlueSnowflakeLabRole
+      
+      
+      
+      
