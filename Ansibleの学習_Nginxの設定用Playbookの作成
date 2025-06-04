@@ -7,6 +7,8 @@
     - devservers
   #  - testservers  #※ここをコメントアウトしておけば開発のみにinstall可能
   become: True #plyabook実行時に権限エラーを防ぐため
+  vars:
+    html_path: "/usr/share/nginx/html/" #変数定義すり
   tasks:
     - name: Install the latest version of nginx
       command: amazon-linux-extras install nginx -y
@@ -61,7 +63,7 @@
           <h1>このページはcopyモジュールでコピーしたページです！</h1>
           </body>
           </html>
-        dest: "/usr/share/nginx/html/" #コピー先
+        dest: "{{ html_path }}index.html/" #コピー先(※vars:に変数定義がある)
 
 
 
