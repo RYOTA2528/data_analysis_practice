@@ -32,4 +32,34 @@
 
     - name: Get status of nginx service #Nginxの状態取得取得
       command: systemctl status nginx
+
+
+### 上記設定が終わり次第まずはhostファイルの修正を実施
+#TeraTermでマスターノードへssh接続
+↓
+①sudo vim /etc/ansible/hosts
+・・・
+#Ex 1:・・・
+[devservers]
+18.181.250.245
+3.112.21.90
+
+[testservers]
+18.183.250.63
+35.78.92.193
+・・・
       
+↓
+②playbookをマスターノードに作成(※上記までで作成した内容をそのまま転記)
+vim install_nginx.yaml
+↓
+③ansible-playbook install_nginx.yaml -v (ansibleを実行する)→エラーになる
+↓
+④sshエージェントの起動が終了してしなってるため再起動
+ssh-agent bash
+↓
+⑤sudo cp ec2-key.pem ~/.ssh/
+↓
+⑥ssh-add ~/.ssh/ec2-key.pem
+↓
+⑦再実行 ansible-playbook install_nginx.yaml -v
