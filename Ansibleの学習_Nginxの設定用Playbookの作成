@@ -92,3 +92,12 @@ ansible-test-target1 ansible_host=18.183.129.63 ansible connection=ssh ansible u
 ansible-test-target1 ansible_host=35.78.92.193 ansible connection=ssh ansible user=ec2-user
 ↓
 ②ansible-playbook -i inventory.txt install_nginx.yaml -v （これでインベントリファイル経由での実行）
+
+
+### HTTPでローカルからターゲットリソースへ接続するためにはセキュリティーグループの設定変更が必要
+
+#EC2上で確認すると、AMI(アミー)の複製で生成してるため、同じセキュリティーグループ。
+セキュリティーグループで
+インバウンドルール：ルールの編集、ルールの追加でhttpを追加し(0.0.0.0/0)
+↓
+※これでローカルからの接続が可能
