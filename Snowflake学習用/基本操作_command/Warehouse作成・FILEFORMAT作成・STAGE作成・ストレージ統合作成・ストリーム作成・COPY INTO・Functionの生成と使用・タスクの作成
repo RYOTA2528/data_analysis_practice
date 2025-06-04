@@ -1,0 +1,108 @@
+-- WAREHOUSE作成
+create warehouse security_quickstart with
+  WAREHOUSE_SIZE = MEDIUM
+  AUTO_SUSPEND = 60;
+
+-- ファイルフォーマットの作成
+CREATE FILE FORMAT IF NOT EXISTS TEXT_FORMAT
+TYPE = 'CSV'
+FIELD_DELIMITER = ','
+SKIP_BLANK_LINES = TRUE
+ESCAPE_UNENCLOSED_FIELD = NONE;
+
+
+-- ストレージ統合作成
+create STORAGE INTEGRATION s3_int_s3_access_log
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = S3
+  ENABLED = TRUE
+  STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::<AWS_ACCOUNT_NUMBER>:role/<RoleName>'
+  STORAGE_ALLOWED_LOCATIONS = ('s3://<BUCKET_NAME>/<PREFIX>/');
+
+DESC INTEGRATIN s3_int_s3_access_log
+※STORAGE_AWS_IAM_USER_ARNとSTORAGE_AWS_EXTERNAL_IDをメモ
+
+
+-- ステージの作成
+create stage s3_access_logs
+  url = 's3://~'
+  storage_integration = s3_int_s3_access_log
+
+list @s3_access_logs;
+
+  -- 生ログを保存するテーブル
+create table s3_access_logs_staging(
+  raw TEXT,
+  timestamp DATETIME
+)
+
+-- ストリーム作成
+create stream s3_access_logs_stream on table s3_access_logs_staging;
+
+-- COPY INTO
+copy into s3_access_logs_staing from (
+SELECT
+  STG.$1,
+  current_timestamp() as timestamp
+FROM @s3_access_logs (FILE_FORMAT => TEXT_FORMAT) STG
+);
+
+
+-- Functionの生成
+create or replace function parse_s3_access_logs(log STRING)
+returns table (
+    bucketowner STRING,bucket_name STRING,requestdatetime STRING,remoteip STRING,requester STRING,
+    requestid STRING,operation STRING,key STRING,request_uri STRING,httpstatus STRING,errorcode STRING,
+    bytessent BIGINT,objectsize BIGINT,totaltime STRING,turnaroundtime STRING,referrer STRING, useragent STRING,
+    versionid STRING,hostid STRING,sigv STRING,ciphersuite STRING,authtype STRING,endpoint STRING,tlsversion STRING)
+language python
+runtime_version=3.8
+handler='S3AccessLogParser'
+as $$
+import re
+class S3AccessLogParser:
+    def clean(self,field):
+        field = field.strip(' " " ')
+        if field == '-':
+            field = None
+        return field
+        
+    def process(self, log):
+        pattern = '([^ ]*) ([^ ]*) \\[(.*?)\\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (\"[^\"]*\"|-) (-|[0-9]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (\"[^\"]*\"|-) ([^ ]*)(?: ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*))?.*$'
+        lines = re.findall(pattern,log,re.M)
+        for line in lines:
+            yield(tuple(map(self.clean,line)))
+$$;
+
+※必要に応じて解析機能をテストする
+
+select parsed_logs.*
+    from s3_access_logs_staging
+    join table(parse_s3_access_logs(s3_access_logs_staging.raw)) parsed_logs;
+
+
+※解析されたログを保持するテーブルを作成
+create or replace table s3_access_logs(
+ bucketowner STRING,bucket_name STRING,requestdatetime STRING,remoteip STRING,requester STRING,
+    requestid STRING,operation STRING,key STRING,request_uri STRING,httpstatus STRING,errorcode STRING,
+    bytessent BIGINT,objectsize BIGINT,totaltime STRING,turnaroundtime STRING,referrer STRING, useragent STRING,
+    versionid STRING,hostid STRING,sigv STRING,ciphersuite STRING,authtype STRING,endpoint STRING,tlsversion STRING
+);
+
+
+-- タスクの作成
+create or replace task s3_access_logs_transformation  -- タスク名を定義（存在すれば上書き）
+warehouse = security_quickstart                       -- タスク実行に使用する仮想ウェアハウス（Computeリソース）
+schedule = '10 minute'                                -- 10分ごとにこのタスクをスケジュール実行
+when
+  system$stream_has_data('s3_access_logs_stream')     -- 指定したストリームに新しいデータがある場合のみ実行
+as
+insert into s3_access_logs                            -- 結果を挿入する対象テーブル
+(
+  select parsed_logs.*                                -- パースされたログの全列を挿入
+  from s3_access_logs_stream                          -- ストリームテーブル（変更ログ）
+  join table(parse_s3_access_logs(s3_access_logs_stream.raw)) parsed_logs
+                                                      -- UDF/関数でraw列をパースして構造化されたログに変換
+  where s3_access_logs_stream.metadata$action = 'INSERT'
+                                                      -- INSERT された新規データだけを対象に処理（更新や削除は無視）
+);
