@@ -1,0 +1,27 @@
+from flask import Flask, request, jsonify  # Flask本体、リクエスト情報取得、JSONレスポンス作成をインポート
+
+app = Flask(__name__)  # Flaskアプリケーションのインスタンスを作成
+
+# GETメソッドで /hello にアクセスされた時の処理を定義
+@app.route('/hello', methods=['GET'])
+def hello():
+    # JSON形式でメッセージを返す。APIの簡単な動作確認用エンドポイント
+    return jsonify({"message": "Hello, HTTP API!"})
+
+# POSTメソッドで /data にアクセスされた時の処理を定義
+@app.route('/data', methods=['POST'])
+def receive_data():
+    data = request.json  # リクエストボディのJSONを辞書として取得
+    # 受け取ったデータをそのままJSON形式で返す。送信確認やテストに便利
+    return jsonify({"received": data})
+
+# 直接このスクリプトを実行した場合に、開発用サーバーを起動
+if __name__ == '__main__':
+    app.run(debug=True)  # デバッグモード有効でローカルサーバーを起動（変更時に自動リロード）
+
+
+### 
+#python app.py
+#🔁 結果
+#if __name__ == '__main__': の部分が実行され、Flask の開発用サーバーが起動します。
+# ターミナル上に Running on http://127.0.0.1:5000/ のような表示が出たら成功。
