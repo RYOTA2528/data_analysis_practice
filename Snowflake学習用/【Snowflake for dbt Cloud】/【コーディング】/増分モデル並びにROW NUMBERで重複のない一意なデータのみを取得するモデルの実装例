@@ -1,0 +1,41 @@
+-- 1. incremental モデルの設定
+{{
+    config(
+        materialized='incremental',
+        unique_key='id',
+    )
+}}
+
+-- 2. Staging 層の参照
+WITH stg_example AS (
+    SELECT v FROM {{ source('product1_staging', 'stg_example') }}
+    {% if is_incremental() %}
+        AND updated_at >= (select coalesce(max(updated_at), '1900-01-01 00:00:00') from {{ this }})
+    {% endif %}
+),
+
+-- 3. 行番号を付与
+stg_example_ranked AS (
+    SELECT
+        v,
+        ROW_NUMBER() OVER (PARTITION BY v:id ORDER BY v:updated_at DESC) AS row_num
+    FROM
+        stg_example
+)
+
+-- 4. テーブルの更新
+SELECT
+    v:id::string AS id,
+    v:note::string AS note,
+    parse_json(v:content::string) AS content,
+    v:created_at::timestamp AS created_at,
+    v:updated_at::timestamp AS updated_at,
+    v:deleted_at::timestamp AS deleted_at,
+FROM 
+    stg_example_ranked
+WHERE
+    row_num = 1
+    
+    
+    
+#参照：https://zenn.dev/dataheroes/articles/20240825-snowflake-dbt-elt-architecture
