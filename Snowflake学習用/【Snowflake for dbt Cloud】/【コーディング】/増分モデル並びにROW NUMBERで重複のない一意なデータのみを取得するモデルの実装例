@@ -39,3 +39,10 @@ WHERE
     
     
 #参照：https://zenn.dev/dataheroes/articles/20240825-snowflake-dbt-elt-architecture
+
+
+# 通常の増分更新
+% dbt run --select example
+
+# モデル全体の再構築
+% dbt run --select example --full-refresh
