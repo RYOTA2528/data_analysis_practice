@@ -1,0 +1,21 @@
+.env ファイルにキーと値を定義し、python-dotenv ライブラリで読み込みます：
+
+.env:
+
+makefile
+コピーする
+編集する
+DST_S3_BUCKET=my-data-bucket
+DST_SNOWFLAKE_DATABASE=sales_db
+...
+Python側：
+
+python
+コピーする
+編集する
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+DST_S3_BUCKET = os.getenv('DST_S3_BUCKET')
