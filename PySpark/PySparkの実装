@@ -145,3 +145,19 @@ df.show()
 #実際に上記条件で分けられてるfilterで確認
 df_tmp.filter(df_tmp["cancel_value"]==9999).show()
 
+
+## ユニーク
+df.select("Country").distinct().show()
+
+## 重複行の削除
+df.dropDuplicates(["InvoiceNo"]).count()
+
+#whenによる条件分岐
+from pyspark.sql.functions import when
+df_new = df.withColumn("PriceCategory",
+                    when(df["UnitPrice"]>15, "expensive")
+                        .when((df["UnitPrice"]<=15) & (df["UnitPrice"]>5), "medium")
+                        .when((df["UnitPrice"]<=5) & (df["UnitPrice"]>0), "cheap")
+                        .otherwise("unknown")
+                       )
+
