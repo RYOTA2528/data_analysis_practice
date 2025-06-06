@@ -1,0 +1,26 @@
+Dockerの流れ
+DockerDeskTopのダウンロード
+↓
+対象フォルダへDockerFileの格納
+↓
+以下コマンド実行
+①docker build -t pyspark-image
+（解説）
+Dockerコンテナ上にDockerImageを作成
+
+②docker image ls
+
+
+③docker run -it --rm -p 8880:8888 -v ${PWD}:/c/Users/斎藤僚太/Documents/PySpark イメージID
+(解説)
+docker run	Docker コンテナを起動する基本コマンド
+-it	インタラクティブモード（キーボード操作ができる）＋擬似ターミナル割り当て
+--rm	コンテナを終了したら自動で削除（後始末を自動で）
+-p 8880:8888	ホストPCのポート8880を、コンテナのポート8888に接続
+-v ${PWD}:/c/Users/斎藤僚太/Documents/PySpark	ボリューム（共有フォルダ）設定
+ホストのカレントディレクトリ（${PWD}）を、コンテナ内の /c/Users/斎藤僚太/Documents/PySpark にマウント（接続）
+
+
+
+④※上記でDockerが起動したため、記載されてるURLをコピーし以下のようにURLを天気
+127.0.0.1:8880:(https://以降の転記（もしくはそのままURLを貼り付けて右のポートを自身の番号へ変更）)
