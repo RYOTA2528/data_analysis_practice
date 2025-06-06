@@ -93,4 +93,18 @@ df.withColumnRenamed("Country", "Country_name").show()
 # 以下でカラム名だけ表示も可能
 df.withColumnRenamed("Country", "Country_name").columns
 
+## 欠損値処理
+df.show()
+#isNull
+df[df["InvoiceNo"].isNUll()].show()
+# nanチェック isnan
+#インポートが必要
+from pyspark.sql.functions import isnan
+df[isnan(df["Description"])].count()
+#欠損値の穴埋め方法 fillna
+df.fillna("unknown", subset=["Description"])
+df.filter(df["DEscription"]=="unknown").count()
+#欠損値の削除 drapna
+df[df["CustomerID"].isNull()].count()
+df.dropna("any").count()
 
