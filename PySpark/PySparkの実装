@@ -44,3 +44,33 @@ df.show()
 
 df.dtypes
 
+## 列を指定してデータの抽出
+df.select("StockCode", "Description").show()
+# 行数カウント
+df.count()
+
+
+## 条件を満たすレコード抽出
+df.filter(df["UnitPrice"] > 30).show()
+df.fileter(df["Country"]=='Switzerland').show()
+
+
+## Whereを使用したレコードの抽出
+# show(trancate=False)で隠れてる文字も表示
+df.where(df["Description"].contains("WATER")).show(trancate=False)
+
+## 列の作成と削除
+# WithColumn
+df = df.withColumn("amount", df["UnitPrice"]*df["Quantity"]).show()
+df.show()
+# DROP
+df = df.drop("amount", "StockCode").show()
+df.show()
+
+## 列名の変更
+#withColumnRenamed
+df.withColumnRenamed("Country", "Country_name").show()
+# 以下でカラム名だけ表示も可能
+df.withColumnRenamed("Country", "Country_name").columns
+
+
