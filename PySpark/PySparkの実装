@@ -161,3 +161,11 @@ df_new = df.withColumn("PriceCategory",
                         .otherwise("unknown")
                        )
 
+## Pandasのフレームワークへ変換
+#pandasへ
+df_pandas = df.toPanadas()
+df_pandas
+#sparkへ
+df_pyspark = spark.createDataFrame(df_pandas)
+df_pyspark.show()
+
