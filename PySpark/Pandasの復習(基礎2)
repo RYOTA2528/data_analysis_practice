@@ -1,0 +1,199 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas_profiling as pdp
+
+
+### DataFrameの列の演算
+# 再読み込み
+df = df.read_csv("bbbb.csv", encoding="cp932")
+df.dtypes
+
+------------------------
+### 100本ノックから追記
+## データ定義を確認
+df.info()
+
+## 文字列に変換
+df["Transcation_ID"] = df["Transcation_ID"].astype("string")
+
+## 日付データをdataTime型に
+df["Transcation_Date"] = pd.to_datetime(df["Transaction_Date"])
+
+## 統計
+df.describe()
+
+##カラム名変更
+df.rename(coloumns={"Amount": "Sales_Amount"})
+
+## 四捨五入
+df["Amount"].round(-2)
+
+## 取引データからAmountが5000円を超える取引だけを抽出
+df.query("Amount > 5000")
+
+## ３０歳以上５０歳以内
+df.query("30 <= member <= 50")
+
+## ３０歳以上５０歳以内 かつ Store_ID が「1」または「3」
+df.query("(30 <= age <= 50) and (Store_ID == '1' or Store_ID == '1')")
+
+## Product_ID が「10」、「20」、「30」のいずれかに一致する取引
+df.query("Product_ID in ['10', '20', '30']")
+
+## Quantity が最頻値で、かつ Store_ID が「3」の取引を抽出
+#最頻値取得
+mode_quantity = df["Quantity"].mode()
+df.query("Quantity == @mode_quantity and Store_ID == '3'")
+
+## Product_IDは何種類あるか確認
+print(df["Product_ID"].nunique())
+
+## 取引データのProduct_ID ごとに Amount の合計を計算
+df.groupby("Product_ID")["Amount"].sum()
+
+## Product_ID ごとにQuantityの中央値を計算
+df.groupby("Product_ID")["Quantity"].median()
+
+## Store_ID ごとに平均Amountを集計してください
+df.groupby("Store_ID")["Amount"].mean()
+
+## Transaction_Dateから日付だけ取り出して日付ごとに Amount の合計を集計
+df["Transaction_Date_YYYYMMDD"] = sales_df['Transaction_Date'].df.date
+df.groupby("Transaction_Date_YYYYMMDD")["Amount"].sum()
+
+
+## 日付ごとの合計Amountを集計し、合計Amountが小さい順にソート
+df.groupby("Transaction_Date_YYYYMMDD")["Amount"].sum().reset_index().sort_values(by="Amount", ascening=True)
+
+
+## 月ごとに Amount を集計
+df["Month"] = df["Transaction_Date"].df.to_period("M")
+df.group_by("Month")["Amount"].sum()
+
+## 曜日ごとの合計Amountを集計
+df["Day_of_Week"] = df["Transaction_Date"].dt.day_name()
+df.groupby("Day_of_Week")["Amount"].sum()
+
+## 週間ごとのAmountの増減を計算し、増加率をパーセンテージで表示
+weekly_sales = sales_df.groupby("Week")["Amount"].sum().reset_index()
+weekly_sales["Amount"].pct_change()
+
+
+## DataFrameのカラムをinplace=Trueで直接削除（変数に入れれば変更は保持できる）
+df.drop(["Transaction_Date_yyyyMMdd", "Month", "Day_of_Week", "Week"], axis=1, inplace=True)
+df
+
+
+###  Groupbyとqueryの組み合わせで集計        
+## Amount が1000円を超える取引を抽出し、Store_ID と Product_ID ごとに Amount の合計を計算
+filterd_sales = df.query("Amount > 1000")
+filterd_sales.groupby(["Store_ID", "Product_ID"])["Amount"].sum()
+
+
+## Store_ID ごとの合計Amountを集計し300000円以上の店舗を抽出
+store_sales = df.group("StoreID")["Amount"].sum().reset_index()
+store_sales.query("Amount > 300000")
+
+## 会員ごとに取引回数をカウント
+df.groupby("Member_ID")["Transaction_ID"].count()
+
+
+## Store_ID が [1, 5, 9] の取引を抽出し、Store_ID ごとに Quantity の合計を計算
+filter_store_transaction = df.query("Store_ID in ['1', '2', '9']")
+filter_store_transaction.groupby("StoreID")["Quantity"].sum()
+
+
+## データセットの最後の10日間の取引を抽出し、Transaction_Date ごとにAmountを集計
+last_10_days = df[df["Transaction_Date"] > df["Transaction_Date"].max() - pd.Timedelta(days=10)] #pd.Timedeltaを使えばデータ型で算術式が可能
+last_10_days.groupby("Transaction_Date")["Amount"].sum()
+
+
+## 合計Amountが最も高い会員トップ5を特定
+df.groupby("Member_ID")["Amount"].sum().nlargest(5) 
+
+## 会員ごとに最も新しい取引を集計
+df.groupby("Member_ID")["Transaction_Date"].max()
+
+
+## 会員ごとに最も古い取引を集計
+df.groupby("Member_ID")["Transaction_Date"].min()
+
+
+## 会員ごとに取引日時の最も古いデータと最も新しいデータを集計し、それぞれが違うレコードを抽出
+df_tmp = df.groupby("Member_ID").agg({"Transaction_Date":["min","max"]}).reset_index()
+df_tmp
+df_tmp.columns = ["Member_ID", "Transaction_Date_Max", "Transaction_Date_Min"]
+df_tmp.query("Transaction_Date_Max != Transaction_Date_Min")
+
+
+## Member_IDに[2]が含まれるか会員の取引を抽出
+df[df["Member_ID"].str.contains("2")]
+
+## Product_ID が「1」で始まる取引を抽出
+df[df["Product_ID"].str.contains("^1", regex = True)]
+
+## Store_ID が「5」で終わる取引を抽出
+df[df["Store_ID"].str.contains("5$", regex=True)]
+
+## Member_ID が3桁の会員の取引を抽出
+df[df["Member_ID"].str.contains("^\{3}$", regex=True)]
+
+
+## Member_ID が「1」で始まり、任意の数字が続く会員の取引を抽出
+df[df["Member_ID"].str.contains("^1\d*", regex=True)]
+
+
+------------------------
+
+
+## 合計金額列の作成
+df["Total"] = df["UnitPrice"] * df["Quantity"]
+df.head()
+
+## 1日ごとの売上
+df.dtypes
+df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"])
+df.dtypes  #これでdatetime64型になる
+# resample関数を使用
+sales_1d = df.resample("D", on="InvoiceDate").sum()
+sales_1d
+#  Quantity,UnitPrice,CusterID, Total
+# InvoiceDate
+#   2010-12-01  1212 22333 43453 4566466
+#   2010-12-02  1212 22333 43453 4566466  のように入る
+sales_1d = sales_1d.drop(colums="CustomerID")
+sales_1d
+
+## 移動平均
+# TOtal3日間の平均値をみる mean()
+sales_1d["3d_moving_avg"] = sales_1d["Total"].rolling(3).mean()
+sales_1d
+
+
+##  前の行との差分
+sales_1d["diff"] = sales_1d["Total"].diff()
+sales_1d
+
+
+## 変化率
+sales_1d["pct_change"] = sales_1d["Total"].pct_change()
+sales_1d
+
+
+## データフレームの結合(inner join, left join)
+#まず結合するためのもう一つのDataFrameを作成
+df_right = pd.DataFrame([[17850, "male", 30]], columns=["CustomerID", "sex", "age"])
+df_right
+df_right.dtypes
+# cutomerIDがFloat型になってしまっていて結合できないためint型に変更
+df = df.fillna({"CustomerID": 9999}) #nonの場合の変換も忘れずに
+#型を変換する
+df["CustomerID"] = df["CustomerID"].astype(int)
+df
+df.dtypes
+# INNER JOIN
+pd.merge(df, df_right, how="inner", on = "CustomerID")
+# LEFT JOIN
+pd.merge(df, df_right, how="inner", on = "CustomerID")
+
