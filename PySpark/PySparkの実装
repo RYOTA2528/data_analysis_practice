@@ -1,0 +1,46 @@
+## PySparkの準備
+from pyspark.sql import SparkSession
+
+## SparkSessionを作る
+spark = SparkSession.builder.appName('Data_wrangling').getOrCreate()
+
+## ファイルの読み込み(",区切りでheaderはそのまま使う")
+# .option("inferSchema", "True") で自動でスキーマ作成
+df = spark.read.format("csv") \
+        .option("inferSchema", "True") \
+        .opion("header", "True") \
+        .option("sep", ",") \
+        .load("../data/Onleine Retail.csv")
+df
+df.show() #実際のデータを表示
+
+#各カラムの型・nullable = trueがわかる
+# TRUE　でnull許容
+df.printSchema() 
+
+type(df) 
+
+
+## スキーマ指定の型を自分で決めて取り込む
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType, DateType
+
+schema = StructType([
+    StructField("InvoiceNo", StringType(), False),
+    StructField("StockCode", StringType(), False),
+    StructField("Description", StringType(), False),
+    StructField("Quantity", IntegerType(), False),
+    StructField("InvoiceDate", DateType(), False),
+    StructField("UnitPrice", FloatType(), False),
+    StructField("CustomerID", StringType(), False),
+    StructField("Country", StringType(), False)
+])
+
+df = spark.read.format("csv") \
+        .opion("header", "True") \
+        .option("sep", ",") \
+        .load("../data/Onleine Retail.csv", schema=schema)
+
+df.show()
+
+df.dtypes
+
