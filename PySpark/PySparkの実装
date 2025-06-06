@@ -108,3 +108,16 @@ df.filter(df["DEscription"]=="unknown").count()
 df[df["CustomerID"].isNull()].count()
 df.dropna("any").count()
 
+
+## 集計groupby
+df.show()
+
+##Description列ごとにカウントする
+df.groupby(df["Description"]).count().sho()
+# 降順処理も加える
+# インポート
+from pyspark.sql.functions import desc, asc
+df.groupby(df["Description"]).count().sort(desc("count")).show(trancate=False)
+# 購入した商品の中で1000回以上購入されてる商品を小さい順に並べ替え
+df.groupby(df["Description"]).count().filter("`count` >= 1000").sort(asc("count")).show(trancate=False)
+
