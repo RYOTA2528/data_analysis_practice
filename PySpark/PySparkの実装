@@ -69,6 +69,26 @@ df.show()
 
 ## 列名の変更
 #withColumnRenamed
+
+##  キャスト(型変換)
+df.dtypes
+df.withColumn("Quantity", df["Quantity"].cast("float"))
+
+## 日付の処理
+df.show()
+df.dtypes
+# インポート
+from pyspark.sql.functions import year, month, dayofmonth
+# 年のカラム作成
+df_tmp = df.withColumn("paurchased_year", year("InvoiceDate"))
+df_tmp.show()
+# 月のカラム作成
+df_tmp = df.withColumn("paurchased_month", month("InvoiceDate"))
+df_tmp.show()
+# 日付のカラム作成
+df_tmp = df.withColumn("paurchased_day", dayofmonth("InvoiceDate"))
+df_tmp.show()
+
 df.withColumnRenamed("Country", "Country_name").show()
 # 以下でカラム名だけ表示も可能
 df.withColumnRenamed("Country", "Country_name").columns
