@@ -169,3 +169,14 @@ df_pandas
 df_pyspark = spark.createDataFrame(df_pandas)
 df_pyspark.show()
 
+
+## DataFrame作成とJoin
+df1 = spark.createDataFrame([(1, "apple"),(2, "orange"), (3, None), (4, "banana"), (None, "grapes"),["id", "value1"]])
+df1.show()
+df2 = spark.createDataFrame([(2, "orange"),(4, "banana"), (6, "None"),(8, "carrot"),["id", "value2"]])
+df1.show()
+#inner join
+df1.join(df2, "id", "inner").show()
+#left join
+df1.join(df2, "id", "leftouter").show()
+
