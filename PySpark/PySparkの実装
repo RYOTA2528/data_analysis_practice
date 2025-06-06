@@ -180,3 +180,20 @@ df1.join(df2, "id", "inner").show()
 #left join
 df1.join(df2, "id", "leftouter").show()
 
+
+## ファイル出力
+df.show()
+df.write.format("csv").option("delimiter",",").save("save_dataframe")
+
+#一つのcsvにする
+df.coalesce(1).write.format("csv").option("delimiter",",").save("./data/save_coalesce_coalacdataframe")
+
+# パーティション分けをして保存
+#yearとmonthで列を作って分ける
+df_tmp = df.withColumn("purchase_year", year(InvoiceDate)) \
+            .withColumn("purchase_month", month(InvoiceDate))
+df_tmp.show()
+
+df_tmp.write.partitionBy("purchase_year", "purchase_month").format("csv") \
+        .option("delimiter", ",").save("./data/save_partiotion_dataframe")
+
