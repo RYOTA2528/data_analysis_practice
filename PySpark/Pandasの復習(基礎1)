@@ -1,0 +1,147 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas_profiling as pdp
+
+## Excelのよみこみ
+df0 = pd.read_excel('aaaa.xlsx')
+df0.head()
+
+## csvファイルに保存
+df0.to_csv('aaa.xlsx', encoding='cp932', index = None)
+
+## csvファイルの読み込み
+df = pd.read_csv("bbbb.csv", encodin="cp932")
+df.head()
+df.tail(7)
+
+## 行数
+len(df)
+# 22323
+
+
+## 行数・列数
+df.shape
+# {22323, 8}
+
+## カラム名の表示
+df.columns
+# Index(['InvoiceNo','StckCode'.....])
+
+## 型をみる
+df.dtypes
+# Invoice object
+# UnitPrice float64
+# Quantity int64InvoiceNO
+
+## 統計
+df.describe()
+
+## レポート作成
+pdp.ProfileReport(df)
+
+## 特定列のvalueだけ取得
+df["InvoiceNo"]
+
+## 複数指定
+df[["InvoiceNo", "StockCode"]]
+
+
+# 特定の行の値を取得 iloc loc
+# 0行目の値すべて
+df.iloc[0, :]
+#InovoiceNo 5323232 
+# StockVode WHITE HANGING
+# Quantity 6
+
+## クロスの部分だけ取得
+df.iloc[0, 2] # 1行目の２列目の値
+
+## locで取得
+df.loc[1, "CustomerID"]
+
+
+## 列名の変更
+df.rename(columns={"InvoiceNO":"Invoice-Number", "StockCode":"Code"})
+
+
+## 列の追加と削除
+# 追加
+flag = [1] * len(df)
+type(flag)
+# list
+df['flag'] = flag
+df
+flag2 = [2] * len(df)
+# indexが振られる
+series = pd.Series(flag2, name="flag2")
+
+## dfに直接結合させる( axis =1 で列方向に結合））
+df = pd.concat([df, series], axis = 1)
+df
+
+
+## 列の削除
+df.drop(["flag", "flag2"], axis=1)
+df.drop("Description, axis=1")
+
+
+## 行の削除
+# 対象の値がある行すべて削除
+df[df["StockCode"]=="85123A"]
+df[df["StockCode"]!="85123A"]
+
+
+## 重複チェック(TRUEが重複)
+df.duplicated()
+# 0  False
+# 1  TRUE
+# 2  False
+
+df[df.duplicated(keep="False")]  #これで重複してる行が返ってくる
+df.drop_duplicates(keep=False) #これで全件重複削除
+
+## 特定の列の重複だけを削除したい
+df.drop_duplicates(subset="InvoiceNo", keep=False)
+
+## 欠損値処理
+df.isnull().sum()
+# 欠損値を入れてみる(行、列)
+df.loc[1, "StockCode"] = np.nan
+df.head()
+#  NoNが入る
+# TrueがNULL
+df["StockCode"].isnull()
+# NULLの行だけを取得する
+df.loc[df["StockCode"].isnull()]
+# NULLの行を削除
+df.dropna(axis=0, how = "any") #nanが入ってればさくじょ
+# 列を指定してNanの行を削除
+df.dropna(subset=["StockCode"])
+# 列の値をNan消し後に何かしらの文字で埋め行の削除を防ぐ
+df.fillna({"StockCode":0}) #0で埋める
+
+## Date型に変換
+df.dtypes
+df["InvoiceDate"] = pd.to_datetime(["InvoiceDate"], format="%Y-%m-%d %H:%M:%S")
+df.dtypes
+#  Invoicedate datetime64nsになる
+
+## Date型の扱い
+# 時間だけを取得
+df["InvoiceDate"].dt.hour
+df["InvoiceDate"].dt.minute
+# 何時何分何秒だけを取得
+df["InvoiceDate"].dt.time
+# 月を取得
+df["InvoiceDate"].dt.month
+
+## 丸める
+# 日にちまでの情報がほしい
+df["InvoiceDate"].dt.round("D")
+# 0     2020-12-01
+df["Invoicedate"].dt.round("H")
+# 0     2020-12-01 13:00:00
+
+
+
