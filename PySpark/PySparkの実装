@@ -121,3 +121,27 @@ df.groupby(df["Description"]).count().sort(desc("count")).show(trancate=False)
 # 購入した商品の中で1000回以上購入されてる商品を小さい順に並べ替え
 df.groupby(df["Description"]).count().filter("`count` >= 1000").sort(asc("count")).show(trancate=False)
 
+
+## 統計量
+df.show()
+df.describe(["Quantity", "UnitPrice"]).show()
+# describeと同じ
+df.select(["Quantity", "UnitPrice"]).summary().show()
+# 平均(Groupbyで集計する)
+df.groupBy("Country").mean("Quantity").show()
+# 平均(aggで集計する)
+df.agg({"Quantity": "mean"}).show()
+
+## 条件分岐と定数
+# 定数作成用のlitをインポート
+from pyspark.sql.functions import lit
+df.show()
+df.withColumn('test',lit(1)).show()
+
+#when,colをインポート
+from pyspark.sql.functions import when, col
+df_tmp = df.withColumn('cancel_value', when(col("Quantity") < 0, lit("9999")).otherwise(lit("1")))
+df.show()
+#実際に上記条件で分けられてるfilterで確認
+df_tmp.filter(df_tmp["cancel_value"]==9999).show()
+
