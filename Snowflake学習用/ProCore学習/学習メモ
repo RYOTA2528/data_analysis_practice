@@ -1,0 +1,52 @@
+■VIEW
+マテリアライズドビュー（Materialized View）
+概要
+マテリアライズドビューは、ビューのクエリ結果を物理的に保存しておく仕組みです。
+
+通常のビューはクエリを実行するたびに基となるテーブルを参照して結果を返しますが、マテリアライズドビューは計算結果を事前に保存しておくため、クエリのパフォーマンスが向上します。
+
+Snowflakeでは、マテリアライズドビューは自動的にインクリメンタルで更新されます。
+
+使いどころ
+重たい集計や結合の結果を頻繁に使う場合に効果的
+
+リアルタイム性は多少犠牲にしても高速な読み込みを優先したい場合
+
+
+CREATE MATERIALIZED VIEW sales_summary_mv AS
+SELECT
+    region,
+    product_category,
+    SUM(sales_amount) AS total_sales,
+    COUNT(*) AS sales_count
+FROM sales
+
+GROUP BY region, product_category;
+この例では、sales テーブルの地域と商品カテゴリごとの売上合計と売上件数を事前計算して保存します。マテリアライズドビューに対してクエリを実行すると高速に結果が得られます。
+
+
+2. セキュアビュー（Secure View）
+概要
+セキュアビューは、ビューの定義や基となるテーブルの詳細（列名やデータ型など）を隠蔽しつつ、ユーザーに安全にアクセス権限を与えたい場合に使います。
+
+セキュアビューの中身は暗号化されていて、ビューの定義が外部に漏れにくいです。
+
+データマスキングや情報漏えい防止の観点で使われます。
+
+使いどころ
+データベースのメタ情報や複雑なロジックを秘匿したいとき
+
+共有先に特定の列だけを見せたい場合の制御
+
+
+
+
+CREATE SECURE VIEW sensitive_customer_view AS
+SELECT
+    customer_id,
+    -- 氏名はマスクして表示
+    CONCAT(SUBSTRING(customer_name, 1, 1), '***') AS masked_name,
+    email
+FROM customers
+WHERE region = 'APAC';
+このビューは顧客名の一部をマスクしつつ、特定地域の顧客だけを抽出して提供しています。ビュー定義は安全に管理されます。
