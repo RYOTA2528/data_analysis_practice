@@ -1,4 +1,4 @@
-■VIEW
+■ VIEW
 マテリアライズドビュー（Materialized View）
 概要
 マテリアライズドビューは、ビューのクエリ結果を物理的に保存しておく仕組みです。
@@ -50,3 +50,32 @@ SELECT
 FROM customers
 WHERE region = 'APAC';
 このビューは顧客名の一部をマスクしつつ、特定地域の顧客だけを抽出して提供しています。ビュー定義は安全に管理されます。
+
+---------------------------------------------------------------------------
+■ result_scan
+RESULT_SCANとは？
+Snowflakeの RESULT_SCAN 関数は、直前に実行したクエリの結果を参照するための関数です。
+
+クエリID（query_id）を使って、そのクエリの結果セットを再利用できる。
+
+たとえば、ある重たいクエリの結果を一時的に再利用したい場合などに便利です。
+
+基本構文
+
+SELECT * FROM TABLE(RESULT_SCAN('クエリID'));
+'クエリID' は対象のクエリの実行ID（SnowflakeのUIやクエリ履歴から確認可能）。
+
+例
+ステップ1：クエリを実行する
+
+SELECT region, product, SUM(sales_amount) AS total_sales
+FROM sales
+GROUP BY region, product;
+このクエリの実行IDは、SnowflakeのUIのクエリ履歴で確認できます。仮に '01a2b3c4-5678-90de-f123-4567890abcde' とします。
+
+ステップ2：RESULT_SCANで結果を再利用する
+
+SELECT *
+FROM TABLE(RESULT_SCAN('01a2b3c4-5678-90de-f123-4567890abcde'))
+WHERE total_sales > 10000;
+この例では、前のクエリ結果から売上が10,000以上の行だけを絞り込んでいます。
