@@ -105,3 +105,54 @@ CREATE OR REPLACE EXTARNAL FUNCTION call_lambda(name STRING)
 
 4. Snowflakeから呼び出す
 SELECT call_lambda('ChatGPT');
+
+---------------------------------------------------------------------------
+■ UDF(ユーザ定義関数)とプロシージャを組み合わせた例
+例の概要
+UDF: 入力された数値を2倍にする関数
+プロシージャ: テーブルから数値を取得して、UDFを呼び出して結果をログに出す
+
+1. サンプルテーブル作成
+CREATE OR REPLACE TABLE sample_numbers(
+    id INT,
+    num INT
+);
+INSERT INTO smaple_numbers VALUE (1,10),(2,20),(3,30);
+
+2. UDFを作成（数値を2倍にする）
+CREATE OR REPLACE FUNCTION double_num(n INT)
+REATRUNS INT
+LANGUAGE SQL
+AS
+$$
+    SELECT n * 2;
+$$;
+
+3. ストアドプロシージャを作成（UDFを呼び出しながら処理）
+CREATE OR REPLACE PROCEDURE process_numbers()
+RETURNS STRING
+LANGUAGE SQL
+AS
+$$
+DECLARE　#SQLストアドプロシージャの中で使う変数やカーソルを宣言している場所
+  result_msg STRING DEFAULT '';
+  v_id INT;
+  v_num INT;
+  v_doubled INT;
+  CURSOR c1 FOR SELECT id, num FROM sample_numbers ORDER BI id
+BEGIN
+  FOR rec IN c1 DO
+    LET v_id = rec.id;
+    LET v_num = rec.num;
+    LET v_doubled = (SELECT double_num(v_num));
+    
+    LET result_msg = result_msg || 'id=' || v_id || ', original=' || v_num || ', doubled=' || v_doubled || '\n';
+  END FOR;
+
+  RETURN result_msg;
+END;
+$$;
+
+
+
+
