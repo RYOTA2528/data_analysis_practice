@@ -153,6 +153,7 @@ BEGIN
 END;
 $$;
 
+CALL process_numbers_sql();
 
 
 
