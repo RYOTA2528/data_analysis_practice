@@ -156,7 +156,7 @@ $$;
 CALL process_numbers_sql();
 
 ---------------------------------------------------------------------------
-■　SnowflakeでシーケンシャルなID（連番）を生成する
+■　SnowflakeでシーケンシャルなID（連番）を生成を実施
 CREATE OR REPLACE SEQUENCE my_sequence START = 1 INCREMENT = 1;
 -- START = 1 → 1から開始
 -- INCREMENT = 1 → 1ずつ増加
