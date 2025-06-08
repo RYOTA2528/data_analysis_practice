@@ -79,3 +79,29 @@ SELECT *
 FROM TABLE(RESULT_SCAN('01a2b3c4-5678-90de-f123-4567890abcde'))
 WHERE total_sales > 10000;
 この例では、前のクエリ結果から売上が10,000以上の行だけを絞り込んでいます。
+
+---------------------------------------------------------------------------
+■ API INTEGRATION（Lambda関数を呼び出す例）
+1. Lambda関数を用意する
+def lambda_handler(event, context)
+    name = event.get('name', 'World')
+    return {
+        'statusCode' : 200,
+        'body': f'Hello, {name} from Lambda!'
+
+2. API GatewayでLambdaをHTTP公開
+CREATE OR REPLACE API INTEGRATION my_api_integration
+    API_PROVIDER = aws_api_gateway
+    API_AWS_ROLE_ARN = '<AWS IAM Role ARN>'
+    ENABLED = TRUE;
+
+3. Snowflakeで外部関数を設定
+CREATE OR REPLACE EXTARNAL FUNCTION call_lambda(name STRING)
+    RETURNS STRING
+    API_INTEGRATION = my_api_integration
+    HEADERS = ('Content-Type = 'application/json')
+    MAX_BATCH_ROWS = 1
+    AS 'https://<your-api-gateway-url>'
+
+4. Snowflakeから呼び出す
+SELECT call_lambda('ChatGPT');
