@@ -1,3 +1,4 @@
+### ステップ①：特徴量ベクトルの作成・それをもとに線形重回帰モデルを生成
 # 1. データの要約表示（すでにインポート済みのdfを想定）
 df.summary().show()
 
@@ -28,4 +29,37 @@ from pyspark.ml.regression import LinearRegression
 clf = LinearRegression(featureCol="features", labelCol="balance")
 
 #上記２つのステージを使ったパイプラインの設定：ステージの登録
-from pyspark.ml.
+from pyspark.ml.pipeline import Pipeline
+pipeline = Pipeline(stages=[assemble, clf])
+mode = pipeline.fit(linear_df) #目的変数も含まれるデータを渡す
+
+
+# パイプラインの実行(各ステージを実行):VectorAssembleで作成した特徴量のベクトルをもとに実際の予測値を出す
+df = model.transform(linear_df)
+df.show()
+################「predictionという線形重回帰による予測値が出来上がる」
+
+### ステップ②：係数や接点の確認をする
+
+##係数の確認：係数ベクトル。説明変数ごとの重みを表す(w1x1+w2x2 ...+b)のw1の1のこと
+model.stages[1].coefficients　# .coefficients は、その回帰モデルが学習した係数
+↓
+（解説）
+features = ["age", "campaign"]
+とした場合に：
+model.coefficients
+# → 結果：DenseVector([12.3, -1.5])
+これは次の意味です：
+age の係数 = 12.3
+→ age が 1 増えると、balance が 約 12.3 増える
+campaign の係数 = -1.5
+→ campaign が 1 増えると、balance が 約 1.5 減る
+
+
+## 切片の確認(+b)：すべての説明変数（特徴量）が0のときの予測値
+model.stages[1].intercept
+↓
+（解説）
+たとえば：
+intercept = 1000.0
+ならば、age = 0 かつ campaign = 0 のとき、balance（予測値）は 1000 になるという意味
