@@ -81,12 +81,25 @@ features = ["age", "campaign"]
 assmble = VectorAssembler(inputCols=features, outputCol="features") #特徴量ベクトル生成
 
 # 線形重回帰モデルの作成(実際にtrain_dfをmodelに使用してみる)
-from pyspark.ml.regression import LinearRegression
-pipeline = Pipeline(stages=[assemble, clf])
-model = pipeline.fit(train_df) 
-#実行
-pred_train = mode.transform(train_df)
-pred_train.show()
+（sklearn の評価指標（metrics）から 平均二乗誤差（MSE） を使うためのインポート。）
+# sklearnの平均二乗誤差関数（MSE）をインポート
+from sklearn.metrics import mean_squared_error
 
+# NumPyの平方根関数を使うためにインポート（RMSEを計算するため）
+import numpy as np
 
+# PySparkのDataFrame（pred_train）をPandasのDataFrameに変換
+# → scikit-learnはPandasまたはNumPy形式のデータを使うため
+pred_train_pandas = pred_train.toPandas()
+
+# RMSEの計算：
+# ① mean_squared_error で MSE（平均二乗誤差）を求める
+# ② np.sqrt で MSE の平方根を取り、RMSE（平方根平均二乗誤差）に変換
+rmse = np.sqrt(mean_squared_error(pred_train_pandas["balance"],  # 正解ラベル（実測値）
+                                  pred_train_pandas["prediction"]))  # モデルの予測値
+
+# 結果を出力
+print("RMSE:", rmse)
+
+（おまけ）pandasでの係数の出し方
 
