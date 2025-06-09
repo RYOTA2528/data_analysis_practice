@@ -15,11 +15,17 @@ tran_df = df.select(features)
 
 # 6. 特徴量ベクトルの作成（VectorAssembler）
 from pyspark.ml.feature import VectorAssembler
+#、PySparkのMLlibで機械学習モデルに入力するための「特徴量ベクトル列」を作成する準備
+assemble = VectorAssembler(inputCols=features, outputCol="features") 
 
-assembler = VectorAssembler(inputCols=features, outputCol="features") 
-
-# 特徴量ベクトルの生成
-# final_df = assembler.transform(tran_df)
+# (解説)特徴量ベクトルの生成
 # VectorAssembler は、複数の列を1つのベクトル列にまとめる。
 # MLlibのモデル（例：線形回帰）は features という1列のベクトルを入力とする。
-# .transform() により、features 列が追加された新しいデータフレーム final_df が作成される。
+
+# 線形重回帰モデリングステージ
+from pyspark.ml.regression import LinearRegression
+# 線形回帰モデルのインスタンスを作成(featureCol="features"は特徴量ベクトルを格納した列、labelCol="balance"は目的変数（預金残高）を表す列。)
+clf = LinearRegression(featureCol="features", labelCol="balance")
+
+#上記２つのステージを使ったパイプラインの設定：ステージの登録
+from pyspark.ml.
