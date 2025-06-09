@@ -102,4 +102,7 @@ rmse = np.sqrt(mean_squared_error(pred_train_pandas["balance"],  # 正解ラベ�
 print("RMSE:", rmse)
 
 （おまけ）pandasでの係数の出し方
+train_cols = train_df.columns
+train_cols.remove(target)
+pd.DataFrame(index=train_cols, data=model.stages[1].coefficients, columns=["coefficients"])
 
