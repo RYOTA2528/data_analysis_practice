@@ -63,3 +63,14 @@ model.stages[1].intercept
 たとえば：
 intercept = 1000.0
 ならば、age = 0 かつ campaign = 0 のとき、balance（予測値）は 1000 になるという意味
+
+
+### ステップ③：学習データとテストデータを分ける
+#学習データ7割、テストデータ3割の例
+tran_df, test_df = data.select(["age","balance", "campaign"]) \
+                      .randomSplit([0.7, 0.3], seed = 1)
+↓
+（解説）seed=1 を指定することで、結果のランダム性を固定します（再現性のある分割になる）
+
+tran_df.show()
+
