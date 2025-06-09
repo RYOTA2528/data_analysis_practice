@@ -1,0 +1,25 @@
+# 1. データの要約表示（すでにインポート済みのdfを想定）
+df.summary().show()
+
+# 2. 線形回帰で使う変数の抽出
+linear_df = df.select(["age", "balance", "campaign"])
+
+# 3. 目的変数（ターゲット）の指定
+target = "balance" 
+
+# 4. 説明変数（特徴量）の指定
+features = ["age", "campaign"]
+
+# 5. モデルに使う特徴量データの作成
+tran_df = df.select(features)
+
+# 6. 特徴量ベクトルの作成（VectorAssembler）
+from pyspark.ml.feature import VectorAssembler
+
+assembler = VectorAssembler(inputCols=features, outputCol="features") 
+
+# 特徴量ベクトルの生成
+# final_df = assembler.transform(tran_df)
+# VectorAssembler は、複数の列を1つのベクトル列にまとめる。
+# MLlibのモデル（例：線形回帰）は features という1列のベクトルを入力とする。
+# .transform() により、features 列が追加された新しいデータフレーム final_df が作成される。
