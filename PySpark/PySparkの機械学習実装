@@ -65,7 +65,7 @@ intercept = 1000.0
 ならば、age = 0 かつ campaign = 0 のとき、balance（予測値）は 1000 になるという意味
 
 
-### ステップ③：学習データとテストデータを分ける
+### ステップ③：学習データとテストデータを分け、データ作成ステージを用意、線形重回帰モデルに学習データをあてて実行
 #学習データ7割、テストデータ3割の例
 tran_df, test_df = data.select(["age","balance", "campaign"]) \
                       .randomSplit([0.7, 0.3], seed = 1)
@@ -73,4 +73,20 @@ tran_df, test_df = data.select(["age","balance", "campaign"]) \
 （解説）seed=1 を指定することで、結果のランダム性を固定します（再現性のある分割になる）
 
 tran_df.show()
+
+#データ作成ステージを用意(特徴量ベクトルの生成)
+from pyspark.ml.feature import VectorAssembler
+target = "balance"
+features = ["age", "campaign"]
+assmble = VectorAssembler(inputCols=features, outputCol="features") #特徴量ベクトル生成
+
+# 線形重回帰モデルの作成(実際にtrain_dfをmodelに使用してみる)
+from pyspark.ml.regression import LinearRegression
+pipeline = Pipeline(stages=[assemble, clf])
+model = pipeline.fit(train_df) 
+#実行
+pred_train = mode.transform(train_df)
+pred_train.show()
+
+
 
