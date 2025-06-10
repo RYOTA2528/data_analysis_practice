@@ -127,3 +127,18 @@ pred_test_pandas = pred_test.toPandas()
 # ② np.sqrt で MSE の平方根を取り、RMSE（平方根平均二乗誤差）に変換
 rmse = np.sqrt(mean_squared_error(pred_test_pandas["balance"],  # 正解ラベル（実測値）
                                   pred_test_pandas["prediction"]))  # モデルの予測値
+
+## 作成したモデルの登録
+CREATE OR REPLACE DATABASE MY_ML_REGISTRY;
+USE MY_REGISTRY;
+CREATE OR REPLACE SCHEMA MODELS;
+USE SCHEMA MODELS;
+
+from snowflake.registry import Registry
+registry = Registry(session = session)
+registry.log_model (
+  model = model,
+  model_name = "customer_churn_model",
+  version_name = "v1"
+  comment = "hogehoge"
+)
