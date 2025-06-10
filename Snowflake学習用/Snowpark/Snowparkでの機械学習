@@ -63,5 +63,21 @@ scaler = StandardScaler(
     drop_input_cols=True                            # 元の age, annual_income 列は削除し、出力列で置き換える
 )
 
-## モデリングを実施
+## モデリングを実施(パイプラインの実施)
+# XGBoost分類器の定義：予測対象は "churn"（解約かどうか）
+xgb = XGBClassifier(
+    input_cols=["age", "annual_income", "gender_code"],  # モデルに使う特徴量
+    label_cols=["churn"],                                # 正解ラベル列（ターゲット）
+    output_cols=["predicted_churn"]                      # モデルが出力する予測列の名前
+)
+
+pipleine = Pipeline( steps = [
+    ("num_imputer", numeric_imputer),
+    ("cat_imputer", categorical_imputer),
+    ("encoder", enccoder),
+    ("scaler", scaler),
+    ("classifier, xgb")
+])
+
+model = pipeline.fit(train_df)
 
