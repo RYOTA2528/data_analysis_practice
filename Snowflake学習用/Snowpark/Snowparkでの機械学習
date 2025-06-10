@@ -81,3 +81,12 @@ pipleine = Pipeline( steps = [
 
 model = pipeline.fit(train_df)
 
+
+## 予測の実施、結果の確認
+pred = model.predict(test_df) #学習済みモデルでテストデータに対して予測を行う処理
+pred.select("ID", "AGE", "GENDER_CODE", "ANNUAL_INCOME", "CHURN", "PREDICT_CHRUN")
+(※pred.show()のほうがみやすい)
+
+
+
+
