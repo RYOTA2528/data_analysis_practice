@@ -29,6 +29,12 @@ monthly = df.with_column("month", month(col("DATE"))) \
 monthly.write.mode("overwirite")\
     .save_as_table("SAMPLE_MONTHLY_SALES")
 
+# read_csv
+import pandas as pd
+upload_df = pd.read_csv("sample_sales")
+upload
+
+
 ---------------------------------------------------------------
 
 
