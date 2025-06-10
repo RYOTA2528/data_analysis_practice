@@ -19,15 +19,23 @@ print(train_df.count(), test_df.count())
 ## インポート
 
 #Snowflake Machine Learning（Snowpark ML） で 欠損値（NaN/null）の補完処理（imputation） を行うためのモジュール
-from snowflake.ml.modeling.impute import simple_imputer
+from snowflake.ml.modeling.impute import SimpleImputer
 #特徴量の**標準化（平均0、標準偏差1）**を行う前処理クラスで
-from snowflake.ml.modeling.preprocessing import standerd_scaler, ordinal_enocoder
+from snowflake.ml.modeling.preprocessing import StanderdScaler, OrdinalEnocoder
 # XGboostの使用
-from snowflake.ml.modeling.xgboost import xgb_classifier
+from snowflake.ml.modeling.xgboost import XGBClassifier
 # 複数の前処理や学習処理を一連のステップとしてまとめる
-from snowflake.ml.modeling pipeline import pipeline
+from snowflake.ml.modeling pipeline import Pipeline
 
-## 補完(データの整合性を合わせる:数値:age,anuuual_income)
+
+## 数値データ（age, annual_income）に欠損値補完を行うための SimpleImputer を作成
+numeric_imputer = SimpleImputer(
+    strategy="median",  # 欠損値の補完方法として「中央値（median）」を使用
+    input_cols=["age", "annual_income"],  # 補完対象の列（欠損がある可能性のある数値列）
+    output_cols=["age", "annual_income"],  # 補完後に出力される列名（上書きする形）
+    passthrough_cols=["gender", "churn"],  # 補完しないが、そのままパイプラインに通す列
+    drop_input_cols=True  # 入力列を削除（output_cols と同じなら上書きの意味）
+)
 
 ## 補完(データの整合性を合わせる:文字列:gender)
 
@@ -36,3 +44,4 @@ from snowflake.ml.modeling pipeline import pipeline
 ## scaler age income（機械学習で使う前に数値のスケール（大きさ）を揃える処理）
 
 ## モデリングを実施
+
