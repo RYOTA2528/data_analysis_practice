@@ -1,0 +1,38 @@
+#パッケージのトグルを開き、検索でsnowflake-ml-python,snowflake-snowpark-pythonのインポート
+# 左記にenvironment.ymlができる(ここに上記記載される)
+#使用する元データ(CUSTOMER_DATA_180)にはID, AGE,GENDER,ANNUAL_INCOME(年収), CHURN列(解約なら1,0)がある。AGE,GENDER,ANNUAL_INCOMEを使い予測
+#XGブーストによる機械学習
+
+## Sessionの確立
+from snoflake.snowpark.cntext import get_active_session
+session = get_active_session()
+
+df = session.table("CUSTOMER_DATA_1808")
+df
+type(df) # snowflakeであることがわかる
+
+## 学習データとテストデータにわける
+train_df, test_df = df.random_split([0.6, 0.2], seed = 2) #seed=2：乱数の初期化値を指定して、毎回同じ分割結果にするため。
+print(train_df.count(), test_df.count())
+
+
+## インポート
+
+#Snowflake Machine Learning（Snowpark ML） で 欠損値（NaN/null）の補完処理（imputation） を行うためのモジュール
+from snowflake.ml.modeling.impute import simple_imputer
+#特徴量の**標準化（平均0、標準偏差1）**を行う前処理クラスで
+from snowflake.ml.modeling.preprocessing import standerd_scaler, ordinal_enocoder
+# XGboostの使用
+from snowflake.ml.modeling.xgboost import xgb_classifier
+# 複数の前処理や学習処理を一連のステップとしてまとめる
+from snowflake.ml.modeling pipeline import pipeline
+
+## 補完(データの整合性を合わせる:数値:age,anuuual_income)
+
+## 補完(データの整合性を合わせる:文字列:gender)
+
+## encoding(genderがM,Fで入ってるため1,0に置き換える)
+
+## scaler age income（機械学習で使う前に数値のスケール（大きさ）を揃える処理）
+
+## モデリングを実施
