@@ -20,7 +20,8 @@ print(train_df.count(), test_df.count())
 
 #Snowflake Machine Learning（Snowpark ML） で 欠損値（NaN/null）の補完処理（imputation） を行うためのモジュール
 from snowflake.ml.modeling.impute import SimpleImputer
-#特徴量の**標準化（平均0、標準偏差1）**を行う前処理クラスで
+#StanderdScaler:特徴量の**標準化（平均0、標準偏差1）**を行う前処理クラス
+#OrdinalEnocoder:カテゴリ変数（文字列など）を、順序付きの整数（0, 1, 2, ...）に変換する前処理クラス
 from snowflake.ml.modeling.preprocessing import StanderdScaler, OrdinalEnocoder
 # XGboostの使用
 from snowflake.ml.modeling.xgboost import XGBClassifier
@@ -37,7 +38,7 @@ numeric_imputer = SimpleImputer(
     drop_input_cols=True  # 入力列を削除（output_cols と同じなら上書きの意味）
 )
 
-# カテゴリ変数（文字列）の欠損値を補完するための SimpleImputer を作成
+## カテゴリ変数（文字列）の欠損値を補完するための SimpleImputer を作成
 categorical_imputer = SimpleImputer(
     strategy="most_frequent",  # 欠損値を「最も頻繁に出現する値（最頻値）」で補完
     input_cols=["gender"],     # 補完の対象となる列（ここでは gender）
@@ -46,9 +47,21 @@ categorical_imputer = SimpleImputer(
     drop_input_cols=True       # 元の gender 列を削除し、output_cols で置き換える
 )
 
-## encoding(genderがM,Fで入ってるため1,0に置き換える)
+## カテゴリ列 "gender" を数値（順序付きの整数）に変換するエンコーダ
+encoder = OrdinalEncoder(
+    input_cols=["gender"],                      # 変換したい元のカテゴリ列（例："Male", "Female"）
+    output_cols=["gender_code"],                # エンコード後の新しい列名（整数が入る）
+    passthrough_cols=["age", "annual_income", "churn"],  # この3列は変換せずにそのまま残す（他の処理で使うため）
+    drop_input_cols=True                        # 元の "gender" 列は削除し、"gender_code" に置き換える
+)
 
-## scaler age income（機械学習で使う前に数値のスケール（大きさ）を揃える処理）
+## age と annual_income のスケールを標準化する（平均0、標準偏差1に変換）
+scaler = StandardScaler(
+    input_cols=["age", "annual_income"],            # スケーリング対象の数値列
+    output_cols=["age", "annual_income"],           # 出力列（同じ列名を使うと上書きになる）
+    passthrough_cols=["gender_code", "churn"],      # スケーリングせずそのまま保持する列
+    drop_input_cols=True                            # 元の age, annual_income 列は削除し、出力列で置き換える
+)
 
 ## モデリングを実施
 
