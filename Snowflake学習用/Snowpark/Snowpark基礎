@@ -1,0 +1,37 @@
+SELECT CURRENT_DATABASE() as db, CURRENT_SCHEMA() as scema;
+
+from snowflake.snowpark.conetext import get_active_session
+session = get_active_session()
+
+df = session.table("SAMPLE_SALES")
+df
+df.dtypes
+type(df)
+
+# snowparkからpandasへ
+my_df = cell8.to_pandas()
+my_df
+
+#フィルタ
+from snowflake.snowpark.functions import col, lit
+df.filter(col("SALES") > 1000)
+
+#列名の変更
+df.to_df(["D","S"])
+
+# 集計
+from snowflake.snowpark.functions import avg, month
+monthly = df.with_column("month", month(col("DATE"))) \
+    .group_by("month")\
+    .agg(avg(col("SALES"))).alias("avg_sales")
+
+# テーブルの作成
+monthly.write.mode("overwirite")\
+    .save_as_table("SAMPLE_MONTHLY_SALES")
+
+---------------------------------------------------------------
+
+
+
+
+
