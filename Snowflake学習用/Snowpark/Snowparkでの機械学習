@@ -37,7 +37,14 @@ numeric_imputer = SimpleImputer(
     drop_input_cols=True  # 入力列を削除（output_cols と同じなら上書きの意味）
 )
 
-## 補完(データの整合性を合わせる:文字列:gender)
+# カテゴリ変数（文字列）の欠損値を補完するための SimpleImputer を作成
+categorical_imputer = SimpleImputer(
+    strategy="most_frequent",  # 欠損値を「最も頻繁に出現する値（最頻値）」で補完
+    input_cols=["gender"],     # 補完の対象となる列（ここでは gender）
+    output_cols=["gender"],    # 補完後の出力列（同名なので上書き）
+    passthrough_cols=["age", "anuual_income", "churn"],  # 補完せずにそのまま通す列（後続処理のために保持）
+    drop_input_cols=True       # 元の gender 列を削除し、output_cols で置き換える
+)
 
 ## encoding(genderがM,Fで入ってるため1,0に置き換える)
 
