@@ -89,4 +89,11 @@ pred.select("ID", "AGE", "GENDER_CODE", "ANNUAL_INCOME", "CHURN", "PREDICT_CHRUN
 
 
 
-
+## モデルの評価を実施 Snowpark DataFrame を Pandas DataFrame に変換（sklearnがPandas形式を要求するため）
+# from sklearn.metrics import confusion_matrix
+pred_df = pred.to_pandas()
+# 混同行列（Confusion Matrix）を計算：正解と予測のクロス表
+cm = confusion_matrix(pred_df["CHURN"], pred_df["PREDICTED_CHURN"])
+# 混同行列の表示（例：[ [TN, FP], [FN, TP] ] の形）
+print(cm)
+ 
