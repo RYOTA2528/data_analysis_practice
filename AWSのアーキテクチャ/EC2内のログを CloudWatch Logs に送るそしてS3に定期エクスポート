@@ -1,0 +1,47 @@
+① IAM ロールの作成と EC2 にアタッチ
+まず、EC2 に次のような IAM ロールをアタッチします。
+
+ポリシー例（最低限）：
+json
+
+
+{
+  "Effect": "Allow",
+  "Action": [
+    "logs:PutLogEvents",
+    "logs:CreateLogGroup",
+    "logs:CreateLogStream"
+  ],
+  "Resource": "*"
+}
+② CloudWatch Agent のインストール（Amazon Linux）
+bash
+
+
+sudo yum install -y amazon-cloudwatch-agent
+または Ubuntu:
+
+bash
+
+
+sudo apt-get install amazon-cloudwatch-agent
+③ 設定ファイルを配置
+設定ファイルを保存（例：/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json）:
+
+bash
+
+
+sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc
+sudo vi /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+中身は、あなたの提供した JSON です。
+
+④ CloudWatch Agent の起動
+bash
+
+
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+  -a fetch-config \
+  -m ec2 \
+  -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+  -s
+これで、CloudWatch Logs に /var/log/messages のログがリアルタイム送信されるようになります。
