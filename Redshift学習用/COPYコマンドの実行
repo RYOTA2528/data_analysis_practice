@@ -24,4 +24,60 @@ JOB CREATE test_auto_copy_demo_sales_job
 AUTO ON;
 
 
+■コピージョブのステータスを追跡するためのシステムテーブル
+SYS_COPY_JOB – 現在定義されている各コピージョブの行が含まれます。
+STL_LOAD_ERRORS – COPY コマンドからのエラーが含まれます。
+STL_LOAD_COMMITS – COPY コマンドのデータ ロードのトラブルシューティングに使用される情報が含まれます。
+SYS_LOAD_HISTORY – COPY コマンドの詳細が含まれます。
+SYS_LOAD_ERROR_DETAIL – COPY コマンド エラーの詳細が含まれます。
+
+
+■コピージョブのステータスを追跡するためのシステムテーブル
+① COPYジョブの成功履歴の確認
+SELECT 
+    userid,
+    filename,
+    table_id,
+    starttime,
+    endtime,
+    rows,
+    status
+FROM stl_load_commits
+WHERE starttime >= dateadd(day, -1, current_date)
+ORDER BY starttime DESC;
+rows: ロードされた行数
+
+status: 成功した場合は「1」、失敗の場合は「0」
+
+② エラーログの確認（stl_error）
+
+SELECT 
+    userid,
+    filename,
+    line_number,
+    err_reason,
+    raw_line
+FROM stl_error
+WHERE filename IS NOT NULL
+AND starttime >= dateadd(day, -1, current_date)
+ORDER BY starttime DESC;
+COPY失敗時のエラー詳細が表示されます。
+
+③ テーブル単位でのエラー確認（stl_load_errors）
+
+SELECT 
+    table_id,
+    filename,
+    line_number,
+    colname,
+    type,
+    position,
+    raw_field_value,
+    err_code,
+    err_reason
+FROM stl_load_errors
+WHERE starttime >= dateadd(day, -1, current_date)
+ORDER BY starttime DESC;
+
+
 
