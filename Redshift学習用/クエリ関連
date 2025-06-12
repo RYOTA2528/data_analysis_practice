@@ -1,0 +1,39 @@
+■マテリアライズドビュー
+
+CREATE OR REPLACE MATERIALIZED VIEW ticket_mv
+AS (
+SELECT
+e.eventname as eventname
+sum(s.priceaid)as total_sales
+FROM event as e, sales s
+WHERE e.eventid = s.eventid
+GROUP BY e.ename
+)
+
+①更新
+refresh materialized view aaa_mv;
+
+②呼び出し
+select * from mat_view_demo.tiket_mv order by eventname
+
+■プロシージャ
+CREATE OR REPLACE PROCEDURE update_sales_price(v_sales_id INT, v_new_price DECIMAL(8,2))
+LANGUAGE plpsql
+AS $$
+BEGIN
+  UPDATE sales SET pricepaid = v_new_price
+  WHERE salesid = v_sales_id;
+  IF NOT FOUND THEN
+     RAISE NOTICE "aaaa.%.",
+      v_sales_id;
+   END IF;
+END;
+$$
+
+■UDF(ユーザ定義関数)
+CREATE OR REPLACE FUNCTION f_concat_ws(s1 VARCHAR, v2 VARCHAR)
+RETURNS VARCHAR
+STABLE
+$$
+SELECT CONCAT($1, CONCAT(' ', $2))
+$$ LANGUAGE sql
