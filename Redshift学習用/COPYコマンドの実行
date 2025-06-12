@@ -8,6 +8,6 @@ delimiter '\t' timeformat 'MM/DD/YYYY HH:MI:SS' region 'us-west-2'
 ■実際にクエリを投げる(publicスキーマのdateテーブルも使用)
 SELECT
  sum(qtysold)
-FROM ext_file_demo.sales, date
-WHERE sales.dateid = date.dateid
+FROM ext_file_demo.sales s, date
+WHERE s.dateid = date.dateid
 AND caldate = '2008-01-05'
