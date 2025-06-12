@@ -1,0 +1,8 @@
+#AWSQuickSightとRedshiftによる接続は「リアルタイムなデータ解析」を可能とします
+
+## 設計イメージ
+①Redshiftが存在するVPC内のインターネットゲートウェイとの接続が必須
+②QuickSightがVPC接続並びにネットワークインターフェイスの作成のためロールの準備
+③QuickSight側のENIからRedshiftへのインバウンド接続を許可するセキュリティーグループ許可設定
+　（つまりQuickSight:OUT、Redshift:INのルール設定必須）
+※上記3点ができ次第QuickSightはRedshiftにクエリを投げられる
