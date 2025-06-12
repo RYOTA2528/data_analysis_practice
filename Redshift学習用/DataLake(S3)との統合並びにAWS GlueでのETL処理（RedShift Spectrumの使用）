@@ -1,0 +1,48 @@
+##DataLake(S3)との統合並びにAWS GlueでのETL処理（RedShift Spectrumの使用）
+
+#設計イメージ
+①IMARoleでRedshiftがS3とAWS Glueにアクセスできるロール(s3readとGlueRead)必要
+②IAMロールを作成したら、既存のRedShiftクラスタに関連付ける
+
+③AWS Glueのデータカタログを使用するうえでExternal SchemaとExternal Tableの作成をし紐づけする
+
+#AWS Glue内にschemaを作成する
+CREATE EXTERNAL SCHEMA demo_spectrum_schema
+from data catalog
+database 'demo_spectrum_db'
+iam_role 'arn:aws:ima::~~~/先ほど作ったrole'
+create external database demo_spectrum_db
+
+# もしもAWSGlue上で上記見つからない場合は、Redshift上でdevDBに再接続したうえで再実行
+
+
+# テーブルを作成する(AWS Glue上に登録される)
+CREATE EXTERNAL TABLE demo_spectrum_schema.sales (
+  sales_id INTEGER,             -- 売上ID（整数型）
+  listid INTEGER,               -- 商品リストID（整数型）
+  buyerid INTEGER,              -- 購入者ID（整数型）
+  eventid INTEGER,              -- イベントID（整数型）
+  qtysold SMALLINT,             -- 売れた数量（小さい整数型）※smalllint → smallintが正しい
+  pricepaid DECIMAL(8,2),       -- 支払金額（整数部6桁、小数部2桁の固定小数点）
+  commision DECIMAL(8,2),       -- 手数料（同上）
+  saletime TIMESTAMP            -- 購入日時（タイムスタンプ型）
+)
+ROW FORMAT DELIMITED            -- フィールドの区切り形式を指定（テキストファイルの区切り文字指定に必要）
+FIELDS TERMINATED BY '\t'       -- タブ区切り（TSV形式）
+STORED AS TEXTFILE              -- ファイル形式はテキストファイル
+LOCATION 's3://~~~'             -- データが保存されているS3のパスを指定
+TABLE PROPERTIES ('numRoles' = '177704')  -- テーブルのプロパティ。用途に応じて設定（例: Hiveの統計情報など）
+;
+
+#実際にクエリを投げる
+SELECT firstname, lastname, total_quantity
+FROM (
+  SELECT buyerid, sum(qtysold), total_quantity
+  FROM demo_spectrum_schema.sales
+  GROUP BY buyerid
+  ORDER BY total_quantity desc limit 10
+) Q, users
+WHERE Q.buyerid = userid
+ORDER BY Q.total_quantity desc;
+
+
