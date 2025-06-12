@@ -53,3 +53,8 @@ where name='users' and tbl = (slelect table_id from svv_table_info s where s.sch
 and col=0
 and num_values>0
 order by slice, col;
+
+
+■evenスライスのtable作成
+create table usereven diststyle even as
+select * from users;
