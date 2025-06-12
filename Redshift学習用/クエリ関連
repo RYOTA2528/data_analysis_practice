@@ -75,3 +75,31 @@ ORDER BY total_quantity desc limit 10) as Q,
 table_desin_demo.users_custom_sort as U
 WHERE Q.buyerid = U.userid
 ORDER BY Q.tital_quantity desc;
+
+■Redshiftでの圧縮
+①カラムのエンコード確認
+select "column", type, encoding
+from pg_table_def where tablename = 'userauto' and schema= 'table_design_demo';
+
+
+②テーブル、テーブルの各カラム、推奨されるエンコーディングスタイル、
+　それに伴う推定すちれーじ削減率(%)が表示
+ANALYSE COMPRESSION userauto;
+
+③圧縮形式で作成
+create table users_cumstom_compression(
+  userid integer not null distkey sorkey,
+  username char(8) encode zstd,
+  firstname varchar(30) encode zstd,
+  lastname varchar(30) encode zstd,
+  city varchar(30),
+  state char(2)
+  email varchar(100),
+  phone char(14),
+  likesports boolean,
+  liketheatre boolean,
+  likeconcerts boolean,
+)
+
+④上記テーブルに改めてusersテーブルのレコードをすべて挿入
+insert into user_custom_compression select * from users
