@@ -11,3 +11,17 @@ SELECT
 FROM ext_file_demo.sales s, date
 WHERE s.dateid = date.dateid
 AND caldate = '2008-01-05'
+
+
+■AutoコピージョブによるS3からの自動コピー
+COPY sales
+from 's3://~~~~/aaaa/sales_'
+credebtials 'aws_iam_role=arn:aws:iam::~~~~:role/test-role-redshift-s3'
+delimiter '\t'
+timeformat 'MM/DD/YYYY HH:MI:SS'
+region 'us-west-2'
+JOB CREATE test_auto_copy_demo_sales_job
+AUTO ON;
+
+
+
