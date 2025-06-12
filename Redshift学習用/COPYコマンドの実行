@@ -4,3 +4,10 @@ credebtials 'aws_iam_role=arn:aws:iam::~~~~:role/test-role-redshift-s3'
 delimiter '\t' timeformat 'MM/DD/YYYY HH:MI:SS' region 'us-west-2'
 
 ※上記の注意点：IAMロールを作成するが、その際にReadShiftのクラスターのアクションでIAMの設定を追加しないといけない
+
+■実際にクエリを投げる(publicスキーマのdateテーブルも使用)
+SELECT
+ sum(qtysold)
+FROM ext_file_demo.sales, date
+WHERE sales.dateid = date.dateid
+AND caldate = '2008-01-05'
