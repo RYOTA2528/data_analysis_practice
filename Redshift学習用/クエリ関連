@@ -37,3 +37,8 @@ STABLE
 $$
 SELECT CONCAT($1, CONCAT(' ', $2))
 $$ LANGUAGE sql
+
+■DML関連
+①UPDATE
+update sales set pricepaid = pricepaid*2 where eventid i (select eventid from event where eventname = '.38 Special')
+
