@@ -58,3 +58,8 @@ order by slice, col;
 ■evenスライスのtable作成
 create table usereven diststyle even as
 select * from users;
+
+
+■ソートキーの割り当て
+create table users_customer_sort sortkey (firstname, lastname) as 
+select * from users;
