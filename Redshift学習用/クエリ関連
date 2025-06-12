@@ -46,3 +46,10 @@ update sales set pricepaid = pricepaid*2 where eventid i (select eventid from ev
 select "column", type, distkey
 from pg_table_def where tablename = 'users' and scheamaname='public';
 
+■ノードの中のスライスを確認する
+select slice,col,num_values as rows, minvalue, maxvalue
+from svv_diskage
+where name='users' and tbl = (slelect table_id from svv_table_info s where s.schema='public' and s.table='users')
+and col=0
+and num_values>0
+order by slice, col;
