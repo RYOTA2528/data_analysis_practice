@@ -42,3 +42,7 @@ $$ LANGUAGE sql
 ①UPDATE
 update sales set pricepaid = pricepaid*2 where eventid i (select eventid from event where eventname = '.38 Special')
 
+■分散キーの特定方法(distkey=trueのこと)
+select "column", type, distkey
+from pg_table_def where tablename = 'users' and scheamaname='public';
+
