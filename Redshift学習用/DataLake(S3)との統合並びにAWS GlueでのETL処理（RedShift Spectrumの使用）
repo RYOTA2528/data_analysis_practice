@@ -46,3 +46,10 @@ WHERE Q.buyerid = userid
 ORDER BY Q.total_quantity desc;
 
 
+（Apendex）
+Redshift Spectrumでは、INSERT SQL文を使ってRedshiftにデータを物理的にロードすることもできます。これは主に小規模なデータセットに使用できます。コマンドは次のようになります。
+INSERT INTO redshift_schema.VENUE (column1, column2, ...)
+SELECT column1, column2, ...
+FROM external_spectrum_schema.VENUE
+WHERE some_condition
+
