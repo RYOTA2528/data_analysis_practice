@@ -61,5 +61,17 @@ select * from users;
 
 
 ■ソートキーの割り当て
-create table users_customer_sort sortkey (firstname, lastname) as 
+create table users_custom_sort sortkey (firstname, lastname) as 
 select * from users;
+
+
+■explain(クエリ性能の評価:今回はソートキーの性能)
+explain SELECT firstname, lastname, total_quantity
+FROM (
+SELECT buyerid, sum(qtysold) as total_quantity
+FRON sales
+GROUP BY buyerid
+ORDER BY total_quantity desc limit 10) as Q,
+table_desin_demo.users_custom_sort as U
+WHERE Q.buyerid = U.userid
+ORDER BY Q.tital_quantity desc;
