@@ -1,0 +1,117 @@
+## AWS Glueとの連携
+
+#設計イメージ
+①AWS GlueとRedshift間の通信を作成するためには、アカウントVPC内にglueネットワークインターフェースを定義
+②S#VPCエンドポイントを作成
+VPCのエンドポイントをクリック
+↓
+作成
+↓
+サービス欄でS3を選択
+↓
+既存のVPCを選択
+↓
+作成
+
+③Redshiftのセキュリティーグループ修正、
+Redshiftクラスターのページでセキュリティーグループのをチェック
+↓
+こちらでRedshiftへのインバウンドルールを変更(Glueから通信が飛べるようにTCPをALL)
+
+④Redshift配下にGlueからの変換結果を保存するためテーブルを作成
+SET search_path to glue;
+
+CREATE TABLE glue.venue(
+  venueid_src smallint NOT NULL ENCODE az64,
+  venuename character varying(100) ENCODE lzo,
+  venucity character varying(100) ENCODE lzo,
+  venuestate character(2) ENCODE lzo,
+  venueseats integer ENCODE az64,
+  venue_uuid character varying(50),
+  PRIMARY KEY (venue_uuid)
+);
+
+select count(*) from glue.venue
+
+③AWSGlewのIAMロールを作成
+IAMロールの信頼関係（Glue から使わせるため）
+
+json
+コードをコピーする
+{
+  "Effect": "Allow",
+  "Principal": {
+    "Service": "glue.amazonaws.com"
+  },
+  "Action": "sts:AssumeRole"
+}
+IAMロールにアタッチするポリシー（全部このロール1つにまとめてOK）
+
+✅ Glue の基本ポリシー（ジョブ実行などに必要）
+→ AWSGlueServiceRole（マネージドポリシー）
+
+✅ Redshift への接続用（IAM 認証やクラスター情報取得）
+json
+コードをコピーする
+{
+  "Effect": "Allow",
+  "Action": [
+    "redshift:GetClusterCredentials",
+    "redshift:DescribeClusters",
+    "redshift:DescribeLoggingStatus"
+  ],
+  "Resource": "*"
+}
+✅ S3 へのアクセス（Glue のデータ一時保存や読込みに必要）
+json
+コードをコピーする
+{
+  "Effect": "Allow",
+  "Action": [
+    "s3:GetObject",
+    "s3:PutObject",
+    "s3:ListBucket"
+  ],
+  "Resource": [
+    "arn:aws:s3:::your-bucket-name",
+    "arn:aws:s3:::your-bucket-name/*"
+  ]
+}
+💡 補足：テストコネクションの裏側で行われること
+Glue が Redshift へテスト接続する際は、この IAM ロールを一時的に引き受けて：
+
+VPC 内の Redshift にアクセスできるか
+
+指定された認証情報（または IAM 認証）で接続できるか
+
+必要なら中間的に S3 を使ってアクセスチェックをするか
+
+などを確認します。
+
+
+
+⑤Glueコンソールから接続を設定
+Connection
+↓
+接続の作成
+↓
+Redshiftを検索し選択
+↓
+VPC、データベース名、ユーザ名、パスワードを選択し接続自体に名前を付ける次へ
+↓
+作成
+↓
+コネクションからテストコネクションを選択
+↓
+IAMRoleは事前に作成済みのものを選択
+↓
+接続
+↓
+実際に接続を試す
+↓
+上記同様に接続を行う、その際IAMロールを選択するｔ自動でネットワークインターフェースが作成される
+（VPCのネットワークインターフェースのページで実際に作成されてるのが確認できる）
+
+↓
+
+
