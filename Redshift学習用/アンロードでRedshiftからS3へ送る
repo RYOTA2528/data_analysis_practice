@@ -1,0 +1,4 @@
+# アンロードでRedshiftからS3へ送る
+unloda('select * from sales')
+to 's3://~~~~~~~~~~~~~/sss/ass/sales_'
+ima_role 'arn:aws:iam::aasa/sdsdds/asassas-role-s3';
