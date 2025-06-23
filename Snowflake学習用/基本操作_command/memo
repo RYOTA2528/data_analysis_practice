@@ -17,9 +17,15 @@ CREATE OR REPLACE file format MANAGE_DB.file_formats.csv_fileformat
   skip_header = 1
   null_if = ('NULL', 'null') #ファイル内で 'NULL' または 'null' という文字列があった場合、それをNULL値として扱う。
   empty_field_as_null = TRUE;　#フィールドが空の時はNULLとして扱う
+  FIELD_OPTIONALLY_ENCLOSED_BY = '"' #CSVファイル内のフィールドがダブルクォーテーションで囲まれている可能性があることをSnowflakeに伝えるオプション
 
 -- ステージの作成
 CREATE OR REPLACE stage MANAGE_DB.external_stages.csv_folder
   URL = 's3://<your-bucket-name>/<your-path>/'
 　STORAGE_INTEGRATION = s3_int
   FILE_FORMAT = MANAGE_DB.file_formats.csv_fileformat
+
+-- COPY INTO
+COPY INTO OUR_FIRST_DB.PUBLIC.move_titles
+  FROM @MANAGE_DB.external_stages.csv_folder
+
