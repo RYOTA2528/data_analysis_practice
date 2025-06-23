@@ -1,0 +1,11 @@
+-- ストレージ統合
+CREATE OR REPLACE STORAGE INTEGRATION s3_int
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = S3
+  ENABLED = TRUE
+  STORAGE_AWS_ROLE_AREN = ''
+  STORAGE_ALLOWD_LOCATIONS = ('s3://<your-bucket-name>/<your-path>/', 's3://<your-bucket-name>/<your-path>/')
+    COMENT = 'aaaa'
+
+-- 確認
+DESC INTEGRATION s3_int;
