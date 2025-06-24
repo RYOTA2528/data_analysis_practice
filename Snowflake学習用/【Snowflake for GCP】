@@ -1,0 +1,15 @@
+// Cloud Strage上でバケット作成後の動作
+
+-- ストレージ統合の作成
+CREATE STORAGE INTEGRATION gcp_integration
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = GCS
+  ENABLED = TRUE
+  STORAGE_ALLOWED_LOCATIONS = ('gcs://bucket/path', 'gcs://bucket/path2');
+
+-- 確認
+DESC STORAGE integration gcp_integration;
+#STORAGE_GCP_SERVICE_ACCOUNTのvalueをコピー 
+
+-- Cloud Storage側の動作
+バケット→選択→右上のパーミッション→ADD PRINCIPALS→上記値を転記　ロールをStorage Adminに
