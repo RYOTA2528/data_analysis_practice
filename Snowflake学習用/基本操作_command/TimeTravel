@@ -1,0 +1,16 @@
+--誤ってwhere ID =1 をつけ忘れ全レコードのfirst nameを変えてしまったケース
+UPDATE OUR_FIRST_DB.public.test
+SET FIRST_NAME = 'Joyen';
+
+-- 1分半前に戻す
+SELECT * FROM OUR_FIRST_DB.public.test at (OFFSET => -60*1.5);
+※エンタープライズエディションなら過去90日前まで戻れるが、スタンダードエディションだと１日前まで
+
+--まずは日本時間に変える
+ALTER SESSION SET TIMEZONE = 'Asia/Tokyo';
+SELECT CURRENT_TIMESTAMP;
+（※上記は右記でも可能：SELECT CONVERT_TIMEZONE('UTC', 'Asia/Tokyo', CURRENT_TIMESTAMP);）
+
+--特定時間よりも前にさかのぼる
+SELECT * FROM OUR_FIRST_DB.public.test before (timestamp => '2021-04-15 17:47:50.581'::timestamp)
+
