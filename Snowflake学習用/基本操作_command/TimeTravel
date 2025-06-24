@@ -17,3 +17,16 @@ SELECT * FROM OUR_FIRST_DB.public.test before (timestamp => '2021-04-15 17:47:50
 -- 特定のクエリIDを使い戻す
 ※クエリヒストリーでＩＤは確認可能
 SELECT * FROM OUR_FIRST_DB.public.test before (statement => '<クエリＩＤ>');
+
+---実際に戻す---
+
+--まずはバックアップテーブルを作成
+CREATE OR REPLACE TABLE OUR_FIRST_DB.public.test_backup as
+SELECT * FROM OUR_FIRST_DB.public.test before (statement => '<クエリＩＤ>');
+
+--元もテーブルの中身を削除
+TRANCATE OUR_FIRST_DB.public.test;
+
+--バックアップを差し込む
+INSERT INTO OUR_FIRST_DB.public.test
+SELECT * FROM  OUR_FIRST_DB.public.test_backup;
