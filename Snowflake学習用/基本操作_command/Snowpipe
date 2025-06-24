@@ -17,6 +17,10 @@ CREATE OR REPLACE file format MANAGE_DB.file_formats.csv_fileformat
   skip_header = 1
   null_if = ('NULL', 'null')
   empty_field_as_null = TRUE;
+ 
+
+-- ファイルフォーマットを修正した場合は必ず以下でrefreshを実施
+ALTER PIPE employee_pipe refresh;
 
 -- ステージ作成
 CREATE OR REPLACE stage MANAGE＿DB.external_stgaes.csv_folder
@@ -40,6 +44,7 @@ CREATE OR REPLACE pipe MANAGE_DB.pipes.employee_pipe
 -- (S3バケットで通知を設定し、このチャンネルに送信するように指示するためにS3に紐づける必要がある)
 desc pipe employee_pipe; 
 
+
 --実際にS3イベント通知を設定
 上記のvalueをコピー
 ↓
@@ -54,3 +59,16 @@ Event Typeはすべてを選択
 （スクロールしてこれらのイベントでLambda関数、SNS、SQSをトリガーも可。今回はSQSを使用）
 ↓
 SQSキューに先ほどのvalueを入れる
+
+
+-- パイプの実施が成功したかどうかを確認する
+SELECT SYSTEM$PIPE_STATUS('employee_pipe');
+※以下のような結果となる
+{
+  "status": "RUNNING",  // パイプが現在アクティブで動作中であることを示す（"STOPPED"なら停止中）
+  "pendingFileCount": 0,  // ステージ上でまだ取り込まれていないファイルの数（0なら全て処理済み）
+  "lastLoadTime": "2025-06-22 10:15:30.123",  // 最後にファイルが正常にロードされた日時（UTC）
+  "lastReceivedFile": "employee_data_2025_06_22.csv",  // 最後に処理されたファイル名
+  "lastError": "",  // 最後に発生したエラーの内容。空文字列ならエラーなし
+  "lastErrorTime": null  // 最後のエラー発生時刻。nullならエラーは発生していない
+}
