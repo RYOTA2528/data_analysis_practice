@@ -30,3 +30,6 @@ TRANCATE OUR_FIRST_DB.public.test;
 --バックアップを差し込む
 INSERT INTO OUR_FIRST_DB.public.test
 SELECT * FROM  OUR_FIRST_DB.public.test_backup;
+
+--UNDROPでDROPしてしまったテーブルを戻すことも可能
+UNDROP table  OUR_FIRST_DB.public.test OUR_FIRST_DB.public.test;
