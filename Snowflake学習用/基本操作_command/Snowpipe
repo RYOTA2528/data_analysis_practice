@@ -85,3 +85,11 @@ SELECT * FROM TABLE(INFORMATION_SCHEMA.COPY_HISTORY(
     table_name => 'OUR_FIRST_DB.PUBLIC.employees'
     START_YIME =>DATEADD(HOUR, -2, CURRENT_TIMESTAMP())
 ));
+
+-- pipeの停止とステータスの確認
+ALTER PIPE MANAGE_DB.pipes.employee_pipe SET PIPE_EXECUTION_PASUED = true;
+
+SELECT SYSTEM$PIPE_STATUS('MANAGE_DB.pipes.employee_pipe')
+
+-- パイプの再開
+ALTER PIPE MANAGE_DB.pipes.employee_pipe SET PIPE_EXECUTION_PASUED = false;
