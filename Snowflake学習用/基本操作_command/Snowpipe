@@ -25,3 +25,32 @@ CREATE OR REPLACE stage MANAGE＿DB.external_stgaes.csv_folder
 　FILE_FORMAT = MANAGE_DB.file_formats.csv_fileformat;
 
 LIST @MANAGE＿DB.external_stgaes.csv_folder
+
+-- 新しいスキーマを用意
+CREATE OR REPLACE SCHEMA MANAGE_DB.pipes;
+
+-- パイプの作成
+CREATE OR REPLACE pipe MANAGE_DB.pipes.employee_pipe
+  auto_ingest = TRUE #新しいファイルがuploadされるたびに自動で実行
+  AS
+  COPY INTO OUR_FIRST_DB.PUBLIC.employees
+  FROM @MANAGE＿DB.external_stgaes.csv_folder;
+
+-- notification_channelを確認
+-- (S3バケットで通知を設定し、このチャンネルに送信するように指示するためにS3に紐づける必要がある)
+desc pipe employee_pipe; 
+
+--実際にS3イベント通知を設定
+上記のvalueをコピー
+↓
+S3の画面でプロパティ
+↓
+S3イベント通知の作成
+↓
+SnowpipeCreateEventsと名前をつけ、csv/snowpipeとprefixを選択
+↓
+Event Typeはすべてを選択
+↓
+（スクロールしてこれらのイベントでLambda関数、SNS、SQSをトリガーも可。今回はSQSを使用）
+↓
+SQSキューに先ほどのvalueを入れる
