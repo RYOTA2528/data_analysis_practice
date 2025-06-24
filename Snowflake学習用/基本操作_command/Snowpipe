@@ -72,3 +72,16 @@ SELECT SYSTEM$PIPE_STATUS('employee_pipe');
   "lastError": "",  // 最後に発生したエラーの内容。空文字列ならエラーなし
   "lastErrorTime": null  // 最後のエラー発生時刻。nullならエラーは発生していない
 }
+
+-- エラー内容を確認する
+SELECT * FROM TABLE(VALIDATE_PIPE_LOAD(
+    PIPE_NAME => 'MANAGE_DB.pipes.employee_pipe'
+    START_TIME => DATEADD(HOUR, -2, CURRENT_TIMESTAMP()
+));
+
+
+-- 実際にpipeが実行したコピーコマンドの履歴を確認
+SELECT * FROM TABLE(INFORMATION_SCHEMA.COPY_HISTORY(
+    table_name => 'OUR_FIRST_DB.PUBLIC.employees'
+    START_YIME =>DATEADD(HOUR, -2, CURRENT_TIMESTAMP())
+));
