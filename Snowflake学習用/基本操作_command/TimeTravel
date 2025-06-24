@@ -14,3 +14,6 @@ SELECT CURRENT_TIMESTAMP;
 --特定時間よりも前にさかのぼる
 SELECT * FROM OUR_FIRST_DB.public.test before (timestamp => '2021-04-15 17:47:50.581'::timestamp)
 
+-- 特定のクエリIDを使い戻す
+※クエリヒストリーでＩＤは確認可能
+SELECT * FROM OUR_FIRST_DB.public.test before (statement => '<クエリＩＤ>');
