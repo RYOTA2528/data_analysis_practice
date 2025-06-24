@@ -13,3 +13,26 @@ DESC STORAGE integration gcp_integration;
 
 -- Cloud Storage側の動作
 バケット→選択→右上のパーミッション→ADD PRINCIPALS→上記値を転記　ロールをStorage Adminに
+
+-- ファイルのフォーマットの作成
+create or replace file format demo_db.public.fileformat_gcp
+  TYPE = CSV
+　FIELD_DELIMITER = ','
+  SKIP_HEADER = 1;
+
+-- ステージ作成
+create or replace stage demo_db.public.stage_gcp
+  STORAGE_INTEGRATION = 'gcs://snowflakebucketgcp'
+  FILE_FORMAT = fileformat_gcp;
+
+LIST @demo_db.public.stage_gcp;
+
+
+-- テーブル作成(省略)
+create or replace table HAPINESS (a varchar, b int, ・・・);
+
+
+-- COPY INTO
+COPY INTO HAPINESS @demo_db.public.stage_gcp;
+
+--アンロード
