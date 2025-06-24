@@ -1,6 +1,9 @@
 // Cloud Strage上でバケット作成後の動作
 
 -- ストレージ統合の作成
+USE ROLE ACCOUNTADMIN;
+USE DATABASE DEMO_DB;
+
 CREATE STORAGE INTEGRATION gcp_integration
   TYPE = EXTERNAL_STAGE
   STORAGE_PROVIDER = GCS
@@ -32,7 +35,11 @@ LIST @demo_db.public.stage_gcp;
 create or replace table HAPINESS (a varchar, b int, ・・・);
 
 
--- COPY INTO
+-- アップロード
 COPY INTO HAPINESS @demo_db.public.stage_gcp;
 
---アンロード
+-- アンロード
+COPY INTO @stage_gcp FROM HAPINESS+
+
+
+
