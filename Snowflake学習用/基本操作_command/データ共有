@@ -28,7 +28,7 @@ GRANT SELECT ON TABLE shared_db.public.products TO SHARE my_share;
 ALTER SHARE my_share ADD ACCOUNTS = ('consumer_account_locator');
 
 
--- コンシューマー側
+-- コンシューマー側の操作
 -- ① 共有を使うためのデータベースを作成
 CREATE DATABASE consumer_view FROM SHARE provider_account_locator.my_share;
 
