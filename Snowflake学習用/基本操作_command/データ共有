@@ -1,0 +1,15 @@
+//Data Sharingの機能の活用
+SnowflakeのData Sharingは、ストレージを複製せずに、
+  他のSnowflakeアカウント（または外部ユーザー）と
+  リアルタイムでテーブル・ビュー・スキーマなどを共有できる仕組みです。
+
+種類	概要
+✅ アカウント間共有（Direct Sharing）	他のSnowflakeアカウントとデータを共有
+🌐 プロバイダーシェアリング（Data Exchange / Marketplace）	複数の消費者とマーケット経由で共有（有料/無料あり）
+🔐 外部共有（Reader Accounts）	Snowflakeアカウントを持たない相手と共有（読み取り専用）
+
+用語	説明
+Provider	データを共有する側（共有元）
+Consumer	データを受け取る側（共有先）
+Share	共有単位。1つのShareに複数のテーブルやビューを含めることができる
+Reader Account	プロバイダーが作成した限定的な読み取り専用アカウント
