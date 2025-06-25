@@ -41,4 +41,46 @@ CLONE OUR_FIRST_DB.PUBLIC;
 
 --（補足）--
 ①別のデータベースにスキーマをクローンすることも可能
+②スキーマ配下のステージも正しくクローンされる
+
+
+
+---実践---
+--タイムトラベルと組み合わせて効率的にクローン
+CREATE OR REPLACE TABLE OUR_FIRST_DB.public.time_travel (
+  id int,
+  first_name string,
+  last_name string
+)
+
+CREATE OR REPLACE FILE FORMAT MANAGE_DB.file_formats.csv_file
+  type = csv
+  field_delimiter = ','
+  skip_header = 1;
+
+CREATE OR REPLACE  STAGE MANAGE_DB.external_stages.time_travel_stage
+  URL = 's3//data-snowflake-fundamentals/time-travel'
+  file_format = MANAGE_DB.file_formats.csv_file;
+
+LIST @MANAGE_DB.external_stages.time_travel_stage;
+
+COPY INTO OUR_FIRST_DB.public.time_travel
+from @MANAGE_DB.external_stages.time_travel_stage
+files = ('customers.csv');
+
+--上記のテーブルにわざと誤update実行
+UPDATE OUR_FIRST_DB.public.time_travel
+SET FIRST_NAME = 'Frank';
+
+--１分前のクエリ結果を確認
+SELECT * FROM OUR_FIRST_DB.public.time_travel as (OFFSET => -60*1);7
+
+-- タイムトラベルかつクローンで戻す
+CREATE OR REPLACE TABLE OUR_FIRST_DB.public.time_travel_clone
+CLONE OUR_FIRST_DB.public.time_travel at (OFFSET => -60*1);
+
+
+
+
+
 
