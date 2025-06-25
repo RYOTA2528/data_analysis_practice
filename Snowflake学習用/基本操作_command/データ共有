@@ -53,3 +53,32 @@ INITIALLY_SUSPEND = TRUE;
 
 // WAREHOUSEへ権限付与
 GRANT USAGE ON WAREHOUSE READ_WH TO ROLE PUBLIC;
+
+---実践---
+-- Reader Accountを作成しSnowflakeアカウントを持ってないユーザにも使用可能にする
+CREATE MANAGED ACCOUNT tech_joy_account
+ADMIN_NAME = tech_joy_admin,
+ADMIN_PASSWORD = '5463FgfdGr',
+TYPE = READER;
+
+-- 実際に提供するURLを確認する
+SHOW MANAGED ACCOUNTS;
+
+-- 実際にデータ共有をする
+ALTER SHARE my_share
+ADD ACCOUNT = <reader-account-id>;
+
+-- reader側での操作
+show shares;
+
+DESC SHARE <producer-account>.my_share;
+
+CREATE DATABASE DATA_SHARE_DB FROM SHARE <producer-account>.my_share;
+
+CREATE WAREHOUSE READ_WH WITH
+WAREHOUSE_SIZE = 'X-SMALL'
+AUTO_SUSPEND = 180
+AUTO_RESUME = TRUE
+INITALLY_SUSPENDED = TRUE;
+
+SELECT * FROM DATA_SHARE_DB.PUBLIC.ORDERS;
