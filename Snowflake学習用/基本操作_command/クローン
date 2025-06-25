@@ -80,6 +80,12 @@ CREATE OR REPLACE TABLE OUR_FIRST_DB.public.time_travel_clone
 CLONE OUR_FIRST_DB.public.time_travel at (OFFSET => -60*1);
 
 
+-- クエリIDでの復元例
+-- まずは確認
+SELECT * FROM OUR_FIRST_DB.public.time_travel_clone before (statement => '<kueriID>')
+
+CREATE OR REPLACE TABLE OUR_FIRST_DB.public.time_travel_clone_of_clone
+CLONE OUR_FIRST_DB.public.time_travel_clone before (statement => '<kueriID>');
 
 
 
