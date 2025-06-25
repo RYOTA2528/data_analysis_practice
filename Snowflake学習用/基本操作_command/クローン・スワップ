@@ -87,6 +87,8 @@ SELECT * FROM OUR_FIRST_DB.public.time_travel_clone before (statement => '<kueri
 CREATE OR REPLACE TABLE OUR_FIRST_DB.public.time_travel_clone_of_clone
 CLONE OUR_FIRST_DB.public.time_travel_clone before (statement => '<kueriID>');
 
-
+-- スワップのコマンド
+ALTER TABLE OUR_FIRST_DB.COPIED_SCHEMA.CUSTOMERS
+SWAP WITH OUR_FIRST_DB.PUBLIC.CUSTOMERS
 
 
