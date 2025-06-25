@@ -16,7 +16,7 @@ Reader Account	プロバイダーが作成した限定的な読み取り専用�
 
 
 ---実践---
--- プロバイダー側
+-- プロバイダー側の操作
 -- ① Shareオブジェクトを作成
 CREATE SHARE my_share;
 
@@ -28,9 +28,28 @@ GRANT SELECT ON TABLE shared_db.public.products TO SHARE my_share;
 ALTER SHARE my_share ADD ACCOUNTS = ('consumer_account_locator');
 
 
--- コンシューマー側の操作
+---実践---
+-- コンシューマー側の操作(※アカウントを「実際に切り替えて以下操作)
+
+-- 実際にシェアされたかの確認
+SHOW SHARES;
+
+-- プロデューサー側のアカウント識別子確認
+DESC SHARE <producder_account>.ORDERS_SHARE;
+--(SHOW SHARESでみたowner_accountが上記アカウント)
+
 -- ① 共有を使うためのデータベースを作成
-CREATE DATABASE consumer_view FROM SHARE provider_account_locator.my_share;
+CREATE DATABASE consumer_view FROM SHARE <provider_account_locator>.my_share;
 
 -- ② テーブルにアクセス
 SELECT * FROM consumer_view.public.products;
+
+-- WAREHOUSEの設定
+CREATE WAREHOUSE READ_WH WITH
+WAREHOUSE_SIZE = 'X-SMALL'
+AUTO_SUSPEND = 180
+AUTO_RESUME = TRUE
+INITIALLY_SUSPEND = TRUE;
+
+// WAREHOUSEへ権限付与
+GRANT USAGE ON WAREHOUSE READ_WH TO ROLE PUBLIC;
