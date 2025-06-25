@@ -21,8 +21,8 @@ Snowflakeにおける クローン（Clone） は、テーブルやスキーマ�
 
 ---実践---
 --クローンテーブルを作成
-CREATE TABLE OUR_FIRST_DB.PUBLIC.CUSTOMERS_CLONE
-CLONE OUR_FIRST_DB.PUBLIC.CUSTOMERS;
+CREATE TABLE OUR_FIRST_DB.PUBLIC.CUSTOMERS_CLONE --コピー先
+CLONE OUR_FIRST_DB.PUBLIC.CUSTOMERS; --コピー元
 
 --実際にクローン下テーブルの更新(元テーブルへの影響はなし)
 UPDATE OUR_FIRST_DB.PUBLIC.CUSTOMERS_CLONE SET LAST_NAME = NULL WHERE id = 1;
@@ -31,3 +31,14 @@ UPDATE OUR_FIRST_DB.PUBLIC.CUSTOMERS_CLONE SET LAST_NAME = NULL WHERE id = 1;
 --（補足）--
 ① テンポラリーテーブルをクローンしてパーマネントにすることはできない
 （トランジットは可能）
+
+
+---実践---
+--スキーマをクローンする
+CREATE TRANSIENT SCEMA OUR_FIRST_DB.COPIED_SCHEMA
+CLONE OUR_FIRST_DB.PUBLIC;
+
+
+--（補足）--
+①別のデータベースにスキーマをクローンすることも可能
+
