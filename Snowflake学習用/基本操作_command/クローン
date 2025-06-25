@@ -30,3 +30,4 @@ UPDATE OUR_FIRST_DB.PUBLIC.CUSTOMERS_CLONE SET LAST_NAME = NULL WHERE id = 1;
 
 --（補足）--
 ① テンポラリーテーブルをクローンしてパーマネントにすることはできない
+（トランジットは可能）
