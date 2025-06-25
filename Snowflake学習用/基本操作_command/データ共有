@@ -23,6 +23,10 @@ CREATE SHARE my_share;
 -- ② テーブルを共有に追加
 GRANT USAGE ON DATABASE shared_db TO SHARE my_share;
 GRANT SELECT ON TABLE shared_db.public.products TO SHARE my_share;
+（publicスキーマ内またはデータベース内の全部のテーブルに対して実施したいのなら
+GRANT SELECT ON ALL TABLES IN SCHEMA OUR_FIRST_DB.public TO SHARE my_share;
+GRANT SELECT ON ALL TABLES IN DATABASE OUR_FIRST_DB TO SHARE my_share;
+）
 
 -- ③ コンシューマーアカウントを指定
 ALTER SHARE my_share ADD ACCOUNTS = ('consumer_account_locator');
@@ -82,3 +86,14 @@ AUTO_RESUME = TRUE
 INITALLY_SUSPENDED = TRUE;
 
 SELECT * FROM DATA_SHARE_DB.PUBLIC.ORDERS;
+
+---実践---
+-- Reader Accountのユーザがさらに別のユーザも使用できるよう追加
+--(この場合のロールはデフォルトでPUBLIC)
+CREATE USER <ユーザ名> PASSWORD = 'difficult_password=123';
+
+--先ほど作成したWAREHOUSEはACCOUNTADMINで作ってるためPUBLICの権限も許可したい
+GRANT USAGE ON WAREHOUSE READ_WH TO ROLE PUBLIC;
+
+-- (追加ユーザへのアクセス権付与)共有データベースのインポート権限を与える必要がある(共有データベース（DATA_SHARE_DB）に含まれる共有オブジェクトの権限を、指定したロール（ここではPUBLIC）に与えるため)
+GRANT IMPORTED PRIVILEGES ON DATABASE DATA_SHARE_DB TO ROLE PUBLIC;
