@@ -38,3 +38,15 @@ CREATE OR REPLACE TEMPORARY TABLE my_temp_table (
   user_id INT,
   temp_score FLOAT
 );
+
+
+//スキーマ自体を変更すればテーブルにも継承される
+CREATE OR REPLACE TRANSIENT SCEMA TRANSIENT_SCHEMA;
+
+show schema;
+
+create or replace table TDB.TRANSIENT_SCHEMA.new_table(
+  id int,
+  first_name string,
+  last_name string
+);
