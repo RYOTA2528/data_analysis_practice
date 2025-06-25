@@ -13,3 +13,24 @@ Provider	データを共有する側（共有元）
 Consumer	データを受け取る側（共有先）
 Share	共有単位。1つのShareに複数のテーブルやビューを含めることができる
 Reader Account	プロバイダーが作成した限定的な読み取り専用アカウント
+
+
+---実践---
+-- プロバイダー側
+-- ① Shareオブジェクトを作成
+CREATE SHARE my_share;
+
+-- ② テーブルを共有に追加
+GRANT USAGE ON DATABASE shared_db TO SHARE my_share;
+GRANT SELECT ON TABLE shared_db.public.products TO SHARE my_share;
+
+-- ③ コンシューマーアカウントを指定
+ALTER SHARE my_share ADD ACCOUNTS = ('consumer_account_locator');
+
+
+-- コンシューマー側
+-- ① 共有を使うためのデータベースを作成
+CREATE DATABASE consumer_view FROM SHARE provider_account_locator.my_share;
+
+-- ② テーブルにアクセス
+SELECT * FROM consumer_view.public.products;
