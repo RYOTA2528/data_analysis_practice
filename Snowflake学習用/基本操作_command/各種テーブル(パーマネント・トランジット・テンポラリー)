@@ -1,0 +1,40 @@
+//テーブルの種類を確認するスキーマ
+SELECT
+*
+FROM SNOWFLAKE.ACCOUNT_USAGE.TABLE_STIRAGE_METRICS
+--IS_TRANSITがNOならパーマネントである
+
+-- Permanent Table（永続的なテーブル、デフォルト）
+-- 特徴：
+-- ・永続的に保存される
+-- ・Time Travel（デフォルト1日）とFail-safe（7日）あり
+-- ・ストレージ料金が最もかかる
+
+CREATE OR REPLACE TABLE my_permanent_table (
+  id INT,
+  name STRING
+);
+
+-- Transient Table（一時的ではないが、軽量で安価）
+-- 特徴：
+-- ・データは永続されるが、Fail-safeが「なし」
+-- ・Time Travelは手動設定（最大1日）
+-- ・バックアップ不要な中間集計やログなどに向いている
+
+CREATE OR REPLACE TRANSIENT TABLE my_transient_table (
+  id INT,
+  event_time TIMESTAMP
+);
+
+
+-- Temporary Table（セッション限定の一時テーブル）
+-- 特徴：
+-- ・セッション終了で自動削除
+-- ・Time Travel・Fail-safe なし
+-- ・同じ名前でも他ユーザーに影響しない（セッションスコープ）
+-- ・データ分析や一時加工用に便利
+
+CREATE OR REPLACE TEMPORARY TABLE my_temp_table (
+  user_id INT,
+  temp_score FLOAT
+);
