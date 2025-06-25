@@ -1,0 +1,44 @@
+dbtモデルファイル：models/time_travel_clone.sql
+
+-- models/time_travel_clone.sql
+
+-- dbtモデル：過去1分前の状態からテーブルをクローン
+
+CREATE OR REPLACE TABLE {{ target.database }}.{{ target.schema }}.time_travel_clone
+CLONE {{ target.database }}.{{ target.schema }}.time_travel
+AT (OFFSET => -60*1);
+🔍 解説
+{{ target.database }} や {{ target.schema }} は dbt の Jinjaテンプレート構文で、現在のターゲットDB/スキーマを動的に反映
+
+AT (OFFSET => -60*1) により、現在時刻の1分前のスナップショットからクローン
+
+クローン結果は time_travel_clone テーブルとして保存される
+
+🛠️ 注意点
+time_travel テーブルがすでに存在し、Time Travelが有効である必要があります
+
+クローンは **マテリアライズドモデル（default: table）**として定義されます
+
+dbt run を使ってこのモデルを実行すれば、クローンテーブルが作成されます
+
+✅ 補足：このモデルを dbt_project.yml に追加
+通常は特に追加不要ですが、モデルが特定のディレクトリにある場合、次のように明示できます：
+
+
+models:
+  your_project_name:
+    time_travel_clone:  # ディレクトリ名やモデル名に応じて調整
+      materialized: table
+
+✅ 実行手順（dbt Cloud or CLI）
+
+dbt run --select time_travel_clone
+🎯 応用したい場合
+OFFSET の代わりに 特定のタイムスタンプでクローン：
+
+
+AT (TIMESTAMP => '2025-06-23 14:30:00')
+もし COPY INTO などロード部分も含めて dbt seedやステージング含めた構成にしたい場合は、さらに展開できます。それも必要であればお手伝いします！
+
+
+
