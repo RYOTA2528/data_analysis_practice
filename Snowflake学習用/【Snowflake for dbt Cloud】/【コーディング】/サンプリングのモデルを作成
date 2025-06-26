@@ -13,6 +13,11 @@ FROM SNOWFLAKE_SAMPLEDATA.TPCDS_SF100TCL.CUSTOMER_ADDRESS
 SAMPLE ROW (1) SEED (27)
 💡 このモデルは view としてマテリアライズするのがおすすめです（dbt_project.yml または config で指定）
 
+--configで実行するなら
+{{ config(
+    materialized = 'view'
+) }}
+
 🧮 モデル②：models/location_type_distribution.sql
 
 -- models/location_type_distribution.sql
@@ -31,7 +36,7 @@ sample_count AS (
 
 SELECT
     base.ca_location_type,
-    COUNT(*)::FLOAT / sc.total_rows * 100 AS location_type_percent
+    COUNT(*)::FLOAT / sc.total_rows * 100 AS location_type_percent　＃定数（total_rows）を全行に付与した
 FROM base
 CROSS JOIN sample_count sc
 GROUP BY base.ca_location_type, sc.total_rows
