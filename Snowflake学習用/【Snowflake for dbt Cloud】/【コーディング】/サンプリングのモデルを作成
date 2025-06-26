@@ -1,0 +1,337 @@
+// Snowflakeで実行していたサンプリングビュー作成＋カテゴリ割合算出を、dbtモデル（SQLファイル）として定義
+✅ ゴール：dbtで2つのモデルを作成
+モデル名	内容
+address_sample	サンプルデータのビュー（CUSTOMER_ADDRESSから約1%を抽出）
+location_type_distribution	上記サンプルからロケーションタイプごとの割合を算出
+
+🧩 モデル①：models/address_sample.sql
+-- models/address_sample.sql
+-- 約1%をランダム抽出するサンプルビュー（再現性のためにSEED使用）
+
+SELECT *
+FROM SNOWFLAKE_SAMPLEDATA.TPCDS_SF100TCL.CUSTOMER_ADDRESS
+SAMPLE ROW (1) SEED (27)
+💡 このモデルは view としてマテリアライズするのがおすすめです（dbt_project.yml または config で指定）
+
+🧮 モデル②：models/location_type_distribution.sql
+
+-- models/location_type_distribution.sql
+-- サンプルからロケーションタイプごとの割合を算出
+
+WITH base AS (
+    SELECT *
+    FROM {{ ref('address_sample') }}
+),
+
+-- 実サンプル件数を取得（正確な比率計算用）
+sample_count AS (
+    SELECT COUNT(*) AS total_rows
+    FROM base
+)
+
+SELECT
+    base.ca_location_type,
+    COUNT(*)::FLOAT / sc.total_rows * 100 AS location_type_percent
+FROM base
+CROSS JOIN sample_count sc
+GROUP BY base.ca_location_type, sc.total_rows
+✅ ref('address_sample') により、モデル間依存関係が自動的に管理されます
+✅ sample_count を使うことで、サンプル行数に基づいた正確な割合を算出できます
+
+⚙️ dbt_project.yml でのマテリアライズ設定（任意）
+
+models:
+  your_project_name:
+    materialized: view
+もしくは個別にモデル内で指定：
+
+
+-- 上部に追加（例：address_sample.sqlの冒頭）
+{{ config(materialized='view') }}
+🚀 実行方法（dbt CLI or Cloud）
+
+dbt run --select address_sample location_type_distribution
+✅ まとめ
+モデル名	処理内容
+address_sample	サンプルビュー（Snowflakeサンプルデータを元に1%抽出）
+location_type_distribution	サンプルにおける CA_LOCATION_TYPE のカテゴリ割合を計算
+
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+dbt モデル（address_sample と location_type_distribution）を実行した結果、得られるデータは以下のようなものになります。
+
+✅ モデル①：address_sample の結果（サンプルデータ）
+このビューは、SNOWFLAKE_SAMPLEDATA.TPCDS_SF100TCL.CUSTOMER_ADDRESS テーブルから 約1%をランダム抽出（再現性あり） したものです。
+
+🔸例（カラム抜粋）：
+
+CA_ADDRESS_ID	CA_LOCATION_TYPE	CA_CITY	CA_STATE	...
+1443	residence	Los Angeles	CA	...
+2539	business	New York	NY	...
+3341	residence	Dallas	TX	...
+4223	residence	Seattle	WA	...
+5710	business	San Francisco	CA	...
+
+サンプル数：約100,000件中 → 1,000件程度（約1%）
+
+SEED指定により、毎回同じランダムサンプルを得られる
+
+✅ モデル②：location_type_distribution の結果（集約された割合）
+このモデルは、address_sample 内のデータを使って、CA_LOCATION_TYPE ごとの出現割合を計算します。
+
+🔹想定される結果：
+
+CA_LOCATION_TYPE	LOCATION_TYPE_PERCENT
+residence	73.8
+business	24.6
+rural	1.6
+
+各ロケーションタイプ（例えば residence, business, rural）について、
+
+サンプル全体に対する**出現割合（％）**を表示
+
+分母は実サンプル件数（例えば 1,000件）で正確に算出される
+
+💡 想定用途
+大規模データを使わず、軽量サンプルで構造や分布を理解する
+
+本番テーブルを参照せずに、検証・分析・ダッシュボード試作
+
+SEEDにより再現性のあるテストデータ分析
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+dbt test の設定方法
+A. NOT NULL テスト（ca_location_type が必ず存在することを保証）
+
+# tests/schema.yml
+
+version: 2
+
+models:
+  - name: address_sample
+    description: "1% sampled view of CUSTOMER_ADDRESS"
+    columns:
+      - name: ca_location_type
+        tests:
+          - not_null
+B. expected_values テスト（ca_location_type が特定の値のみを持つ）
+
+# tests/schema.yml （上の続き）
+
+      - name: ca_location_type
+        tests:
+          - accepted_values:
+              values: ['residence', 'business', 'rural']
+✅ このように、NOT NULL や accepted_values テストは、列の妥当性チェックに使えます。
+dbt test 実行で自動的に検証されます。
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+dbt test による列の品質チェック
+
+vars によるサンプリング率と SEED のパラメータ化
+
+環境（dev/staging/prod）ごとの vars 切り替え
+
+dbt docs によるモデル・変数・テストのドキュメント化
+
+📦 1. テスト定義（schema.yml）
+
+# models/schema.yml
+
+version: 2
+
+models:
+  - name: address_sample
+    description: "1% sampled view of the CUSTOMER_ADDRESS table"
+    columns:
+      - name: ca_location_type
+        description: "Location type of the customer address"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['residence', 'business', 'rural']
+🔧 2. dbt_project.yml に変数（vars）を定義
+
+# dbt_project.yml
+
+name: sample_project
+version: '1.0'
+config-version: 2
+
+profile: sample_project
+
+# デフォルト変数（どの環境でも使える）
+vars:
+  sampling_percentage: 1
+  sampling_seed: 27
+
+models:
+  sample_project:
+    +materialized: view
+🏗️ 3. モデルファイル（Jinjaで変数使用）
+
+-- models/address_sample.sql
+
+SELECT *
+FROM SNOWFLAKE_SAMPLEDATA.TPCDS_SF100TCL.CUSTOMER_ADDRESS
+SAMPLE ROW ({{ var('sampling_percentage') }}) SEED ({{ var('sampling_seed') }})
+🧪 4. テストの実行
+
+# 全テストを実行
+dbt test
+🚀 5. 実行時に vars を上書き（例：5% 抽出に変更）
+
+dbt run --select address_sample --vars '{"sampling_percentage": 5, "sampling_seed": 123}'
+🌐 6. 環境（target）ごとの vars 切り替え（profiles.yml）
+
+# ~/.dbt/profiles.yml
+
+sample_project:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: your_account_id
+      user: your_user
+      password: your_password
+      role: your_role
+      database: your_dev_db
+      warehouse: your_warehouse
+      schema: dev_schema
+      threads: 4
+      vars:
+        sampling_percentage: 1
+        sampling_seed: 27
+
+    staging:
+      type: snowflake
+      account: your_account_id
+      user: your_user
+      password: your_password
+      role: your_role
+      database: your_staging_db
+      warehouse: your_warehouse
+      schema: staging_schema
+      threads: 4
+      vars:
+        sampling_percentage: 10
+        sampling_seed: 42
+
+    prod:
+      type: snowflake
+      account: your_account_id
+      user: your_user
+      password: your_password
+      role: your_role
+      database: your_prod_db
+      warehouse: your_warehouse
+      schema: prod_schema
+      threads: 4
+      vars:
+        sampling_percentage: 100
+        sampling_seed: 1
+
+
+dev：軽量テスト
+
+staging：本番に近い確認用
+
+prod：全件実行（本番）
+
+📘 7. dbt docs によるドキュメント生成と確認
+
+# ドキュメント生成と閲覧
+dbt docs generate
+dbt docs serve
+モデルの説明、列、テスト内容、変数をすべて自動ドキュメント化
+
+Web UIで参照・検索可能！
+
+✅ 最終まとめ：このセットアップでできること
+機能	メリット
+サンプリングモデルのJinja変数化	柔軟・再現性・簡潔
+テスト (not_null, accepted_values)	品質保証、自動チェック
+環境別 vars 切り替え	実行環境に応じた設定の最適化
+ドキュメント自動生成	チーム共有、データカタログ代わりに使える
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+テンプレートプロジェクトを ZIP化 して配布
+🔧 ステップ：
+dbt プロジェクトを1つのディレクトリにまとめる（例：dbt_sampling_project）
+
+pgsql
+
+dbt_sampling_project/
+├── dbt_project.yml
+├── models/
+│   ├── address_sample.sql
+│   └── location_type_distribution.sql
+├── tests/
+│   └── schema.yml
+├── macros/（必要に応じて）
+├── target/（除外してOK）
+└── profiles.yml（または README で案内）
+.zip に圧縮する（ファイル名例：dbt_sampling_template.zip）
+
+bash
+
+zip -r dbt_sampling_template.zip dbt_sampling_project
+共有方法：
+
+メールやチャットで配布
+
+Google Drive, Dropbox, Box などで共有
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーー
+方法②：GitHub で管理・共有（おすすめ）
+🔧 ステップ：
+プロジェクトディレクトリを用意
+
+
+cd ~/projects
+mkdir dbt-sampling-template
+cd dbt-sampling-template
+Git 初期化してコミット
+
+
+git init
+git add .
+git commit -m "Initial commit: dbt sampling template"
+GitHub 上にリポジトリを作成（例：dbt-sampling-template）
+
+https://github.com/new で作成
+
+「README」「.gitignore（Python/DBT向け）」を追加してもOK
+
+リモートにプッシュ
+
+
+git remote add origin https://github.com/<your-username>/dbt-sampling-template.git
+git branch -M main
+git push -u origin main
+🎁 おまけ：README を用意すると親切
+
+# dbt Sampling Template
+
+## 概要
+Snowflake上でのサンプリング分析用のdbtテンプレートです。変数（sampling_percentage, sampling_seed）を調整して柔軟にテストできます。
+
+## セットアップ方法
+1. `profiles.yml` に接続情報を記述
+2. `dbt deps`
+3. `dbt run`
+4. `dbt test`
+5. `dbt docs generate && dbt docs serve`
+
+## 環境別設定（例）
+- dev: 1%
+- staging: 10%
+- prod: 100%
