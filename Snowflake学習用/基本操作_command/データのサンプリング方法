@@ -60,3 +60,31 @@ TABLESAMPLE SYSTEM(%)	高速だがやや偏りあり（ブロック単位）
 SAMPLE(%)	SYSTEMの別名（簡単記法）
 ORDER BY RANDOM()	完全ランダム化したサンプル取得
 
+
+---Udemy----
+-- TRANSIENT データベースの作成（軽量用途：Fail-safeなし、分析・一時利用向き）
+CREATE OR REPLACE TRANSIENT DATABASE SAMPLING_DB;
+
+-- ビュー ADDRESS_SAMPLE の作成：
+-- SNOWFLAKE 提供のサンプルデータセットから、CUSTOMER_ADDRESS テーブルの約1%をランダム抽出
+-- SAMPLE ROW(1)：行単位で1%程度をサンプリング
+-- SEED(27)：ランダムの再現性を確保（同じSEEDを使えば毎回同じ結果になる）
+CREATE OR REPLACE VIEW ADDRESS_SAMPLE AS 
+SELECT *
+FROM SNOWFLAKE_SAMPLEDATA.TPCDS_SF100TCL.CUSTOMER_ADDRESS
+SAMPLE ROW (1) SEED (27);
+
+-- サンプルビューの中身を確認（1% 抽出済みのデータ）
+SELECT * FROM ADDRESS_SAMPLE;
+
+-- サンプルからロケーションタイプごとの割合を算出
+-- COUNT(*) / 50000 * 100：50,000件を基準とした割合（％）を出す便宜的な計算
+-- ※実際のサンプル件数を `SELECT COUNT(*) FROM ADDRESS_SAMPLE;` で確認して調整してもOK
+SELECT 
+  CA_LOCATION_TYPE,
+  COUNT(*) / 50000 * 100 AS LOCATION_TYPE_PERCENT
+FROM ADDRESS_SAMPLE
+GROUP BY CA_LOCATION_TYPE;
+
+
+
