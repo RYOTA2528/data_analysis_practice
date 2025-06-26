@@ -161,3 +161,28 @@ CREATE OR REPLACE TASK RUN_SETUP_TASK_CHAIN
   SCHEDULE = '1 MINUTE'
 AS
 CALL setup_task_chain(TO_VARCHAR(CURRENT_DATE));
+
+
+---実践---
+-- タスクの実行履歴をinformation_schemaから確認する
+SELECT * from table(information_schema.task_history())
+order by scheduled_time desc;
+
+-- フィルタリングして検索
+select * from table(information_schema.task_history(
+scheduled_time_range_start=>dateadd('hour', -4, current_timestamp()),
+result_limit => 5,
+task_name=>'CUSTOMER_INSERT2'
+));
+
+-- 以下時刻でのフィルタリングをする際にtimestampの形式を把握するために使用
+select to_timestamp_ltz(current_timestamp)
+
+-- 一定自時刻でフィルターする
+select * from table(information_schema.task_history(
+  scheduled_time_range_start=>to_timestamp_ltz('2021-04-22 11:28:32.776 -0700'),
+  scheduled_time_range_end=>to_timestamp_ltz('2021-04-22 11:35:32.776 -0700')
+));
+
+
+
