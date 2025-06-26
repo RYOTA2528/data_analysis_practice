@@ -40,6 +40,32 @@ day of week (0-6, SUN-SAT, or L)
 ***** :毎日
 */
 
+/*
+-- 毎日 午前9時に実行（日本時間）
+SCHEDULE = 'USING CRON 0 9 * * * Asia/Tokyo'
+
+-- 毎週月曜日の午前6時に実行
+SCHEDULE = 'USING CRON 0 6 * * 1 Asia/Tokyo'
+
+-- 毎月1日の午前8時に実行
+SCHEDULE = 'USING CRON 0 8 1 * * Asia/Tokyo'
+
+-- 毎日 3時間ごと（0時, 3時, 6時, ...）に実行
+SCHEDULE = 'USING CRON 0 */3 * * * Asia/Tokyo'
+
+-- 毎週金曜日の17時（夕方5時）に実行
+SCHEDULE = 'USING CRON 0 17 * * 5 Asia/Tokyo'
+
+-- 毎月の最終金曜日に実行（例：月末の集計などに便利）
+SCHEDULE = 'USING CRON 0 18 * * 5L Asia/Tokyo'
+
+-- 平日のみ（⽉〜⾦）毎朝8時に実行
+SCHEDULE = 'USING CRON 0 8 * * 1-5 Asia/Tokyo'
+
+-- 特定の月（1月, 4月, 7月, 10月）1日の0時に実行（四半期初日）
+SCHEDULE = 'USING CRON 0 0 1 1,4,7,10 * Asia/Tokyo'
+*/
+
 /*(補足)
 日本時刻はUTC+9時間後
 */
