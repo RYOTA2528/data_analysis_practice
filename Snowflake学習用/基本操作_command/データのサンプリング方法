@@ -1,0 +1,62 @@
+//Snowflakeにおける「データサンプリング方法」
+ Snowflakeの主なサンプリング方法
+1. TABLESAMPLE 句
+Snowflakeが提供するSQL標準のサンプリング機能。以下の形式で使います：
+
+
+SELECT * FROM my_table TABLESAMPLE (10);
+🔍 TABLESAMPLE の構文詳細
+
+SELECT * FROM <テーブル名> 
+TABLESAMPLE ([BERNOULLI | SYSTEM] <パーセンテージ> [ROWS]);
+オプション	説明
+BERNOULLI	各行を独立にランダム抽出（完全ランダム）
+例: 10%なら各行が10%の確率で選ばれる
+SYSTEM	ブロック単位のサンプリング。高速だが偏りがある可能性あり
+<パーセンテージ>	サンプリングの比率（0.01 ～ 100）
+ROWS（任意）	指定すると、比率でなく「行数」で抽出
+
+🧪 例：10% のランダムサンプリング（2通り）
+-- ① 各行に対して10%の確率でサンプリング（より精度の高いランダム性）
+SELECT * FROM customers TABLESAMPLE BERNOULLI(10);
+
+-- ② ブロック単位の高速サンプリング（多少の偏りあり）
+SELECT * FROM customers TABLESAMPLE SYSTEM(10);
+2. SAMPLE() 関数（Snowflake拡張）
+SAMPLE() は TABLESAMPLE のエイリアスで、より使いやすく書けます：
+
+
+SELECT * FROM customers SAMPLE (10);
+これは TABLESAMPLE SYSTEM(10) と同じ意味になります。
+
+3. LIMIT + ORDER BY RANDOM() でランダム抽出
+もっと細かく制御したい場合、例えば「完全にシャッフルしてn件取得」したいなら：
+
+
+SELECT * FROM customers
+ORDER BY RANDOM()
+LIMIT 100;
+完全ランダムに100件抽出（全体からランダム順にソート）
+
+性能が落ちる可能性あり（全件ソートが必要）
+
+🎯 サンプリングの使いどころ
+シーン	方法例
+テストデータ生成	TABLESAMPLE BERNOULLI(5) など
+性能検証のための軽量データ	LIMIT 100 や SAMPLE(1)
+可視化用の軽量抽出	ORDER BY RANDOM() LIMIT 500
+学習・分析の訓練データ用	SAMPLE(20) + 条件抽出など
+
+⚠️ 注意点
+注意事項	内容
+精度よりスピードなら SYSTEM、ランダム性を重視するなら BERNOULLI	
+サンプリングは完全な再現性がない（都度変わる）	
+大量データに ORDER BY RANDOM() は非推奨（コスト高）	
+
+✅ まとめ
+方法	特徴
+TABLESAMPLE BERNOULLI(%)	精度高いランダム抽出（行単位）
+TABLESAMPLE SYSTEM(%)	高速だがやや偏りあり（ブロック単位）
+SAMPLE(%)	SYSTEMの別名（簡単記法）
+ORDER BY RANDOM()	完全ランダム化したサンプル取得
+
