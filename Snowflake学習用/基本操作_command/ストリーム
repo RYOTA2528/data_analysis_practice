@@ -266,9 +266,13 @@ SHOW TASKS;
 INSERT INTO SALES_RAW_STAGING VALUES (11, 'MIlk',1.99,1,2)
 INSERT INTO SALES_RAW_STAGING VALUES (20, 'MIlk',1.99,1,2)
 
+
 UPDATE SALES_RAW_STAGING
 SET PRODUCT = 'Chocolate bar'
 WHERE PRODUCT = 'Chocolate';
+
+
+
 
 DELETE FROM SALES_RAW_STAGING
 WHERE PRODUCT = 'Mango';
@@ -276,3 +280,18 @@ WHERE PRODUCT = 'Mango';
 -- 実際に実行履歴を確認する
 select * from table (information_schema.task_history())
 order by name asc, scheduled_time desc;
+
+
+--------------------------------------------------------
+--------------------------------------------------------
+
+正しいクエリ例（30分前の変更分を取得したい場合）
+変更を取得したいなら以下のように書きます：
+SELECT *
+FROM TABLE(
+  CHANGES(
+    SALES_RAW,
+    TIMESTAMP => DATEADD(MINUTE, -30, CURRENT_TIMESTAMP())
+  )
+);
+
