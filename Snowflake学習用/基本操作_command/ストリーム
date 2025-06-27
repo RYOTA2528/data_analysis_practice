@@ -84,3 +84,36 @@ INSERT INTO sales_final_table
 -- ストリームを確認（0表示されるはず）
 select * from sales_stream;
 
+
+---実践---
+--updateの結果が自動で反映されるようにしたい
+SELECT * FROM SALES_RAW_STAGING;
+
+SELECT * FROM SALES_STREAM;
+
+UPDATE SALES_RAW_STAGING
+SET PRODUCT = 'Potato' WHERE PRODUCT = 'Banana';
+
+--実際に自動で反映するために作成したstreamとfinalテーブルをmerge
+merge into SALES_FINAL_TABLE F
+using SALES_STREM S
+  on f.id = s.id
+when matched
+    and S.METADATA$ACTION = 'INSERT' --これはUPDATE後の変更箇所が「METADATA$ACTION=INSERT」表示されるため
+    and S.METADATA$ISUPDATE = 'TRUE' --これはUPDATE後の変更箇所が「METADATA$ISUPDATE=TRUE」と表示されるため
+    then update
+    set f.product = s.product,
+        f.price = s.price, 
+        f.amount = s.amount
+        f.store_id = s.tore_id;
+
+SELECT * FROM SALES_FINAL_TABLE;
+
+SELECT * FROM SALES_RAW_STAGING;
+
+SELECT * FROM SALES_STREAM;
+
+--この更新を実行し再度上記mergeを実行すれば最終テーブルの結果に反映されるようになる
+UPDATE SALES_RAW_STAGING
+SET PRODUCT = 'Pain' WHERE PRODUCT = 'Potato';
+
