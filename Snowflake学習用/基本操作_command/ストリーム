@@ -225,3 +225,54 @@ when not matched
     then insert
     (s.id.s.product,s.price,s.store_id,s.amount,s.employees,);
 
+--------------------------------------------------------
+--------------------------------------------------------
+
+---実践---
+--ストリームとタスクを組み合わせてみる
+CREATE OR REPLACE TASK all_data_changes
+    WAREHOUSE = COMPUTE_WH
+    SCHEDULE = '1 MINUTE'
+    WHEN SYSTEM$STREAM_HAS_DATA('SALES_STREAM')
+    AS
+merge into SALES_FINAL_TABLE F
+USING ( SELECT STRE.*,ST.location,ST.employees
+        FROM SALES_STREAM STRE
+        JOIN STIRE_TABLE ST
+        ON STRE.store_id = ST.store_id
+) S
+ON F.id = S.id
+when matched
+    and S.METADATA$ACTION = 'DELETE'
+    and S.METADATA$ISUPDATE = 'FALSE'
+    then delete
+when matched
+    and S.METADATA$ACTION = 'INSERT'
+    and S.MEATADATA$ISUPDATE = 'TRUE'
+    then update
+    set f.product = s.product,
+        f.price = s.price,
+        f.amount = s.amount,
+        f.store_id =s.store_id
+when not matched
+    and S.MEATADATA$ACTION = 'INSERT'
+    then insert
+    (s.id.s.product,s.price,s.store_id,s.amount,s.employees,);
+
+ALTER TASK all_data_changes RESUME;
+ALTER TASK all_data_changes SUSPEND;
+SHOW TASKS;
+
+INSERT INTO SALES_RAW_STAGING VALUES (11, 'MIlk',1.99,1,2)
+INSERT INTO SALES_RAW_STAGING VALUES (20, 'MIlk',1.99,1,2)
+
+UPDATE SALES_RAW_STAGING
+SET PRODUCT = 'Chocolate bar'
+WHERE PRODUCT = 'Chocolate';
+
+DELETE FROM SALES_RAW_STAGING
+WHERE PRODUCT = 'Mango';
+
+-- 実際に実行履歴を確認する
+select * from table (information_schema.task_history())
+order by name asc, scheduled_time desc;
