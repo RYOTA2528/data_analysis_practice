@@ -117,3 +117,82 @@ SELECT * FROM SALES_STREAM;
 UPDATE SALES_RAW_STAGING
 SET PRODUCT = 'Pain' WHERE PRODUCT = 'Potato';
 
+--------------------------------------------------------
+--------------------------------------------------------
+
+---実践---
+-- ストリームのオフセットを試す
+
+//ストリーム処理
+CREATE OR REPLACE TRANSIENT DATABASE STREAMS_DB_OFFSET;
+
+--商品生データ
+create or replace table sales_raw_staging(
+  id varchar,
+  product varchar,
+  price varchar,
+  amount varchar,
+  store_id varchar
+);
+
+insert into sales_raw_staging()
+    values
+        (1,'Banana',1.99.1,1),
+        (2,'Lemon',0.99.1,1),
+        (3,'Apple',1.79.1,2),
+        (4,'Orange Juice',1.89.1,2),
+        (4,'Cereals',5.98.2,1);
+
+
+--店舗情報
+create or replace table store_table(
+  store_id number,
+  location varchar,
+  employees number
+);
+
+INSERT INTO STORE_TABLE VALUES(1, 'Chicago', 33); 
+INSERT INTO STORE_TABLE VALUES(2, 'London', 12); 
+
+--最終売上
+create or replace table sales_final_table(
+  id int,
+  product varchar,
+  price number,
+  amount int,
+  store_id int,
+  location varchar,
+  employees int
+);
+
+INSERT INTO sales_final_table
+    SELECT
+    SA.id,
+    SA.product,
+    SA.price,
+    SA.amount,
+    SA.amount,
+    ST.STORE_ID,
+    ST.LOCATION,
+    ST.EMPLOYEES,
+    FROM SALES_RAW_STAGING SA
+    JOIN STIRE_TABLE_STAGING ST 
+    ON ST.STORE_ID=SA.STORE_ID;
+
+create or replace stream sales_stream on table sales_raw_staging;
+
+SHOW STREAMS;
+
+DESC STREAM sales_stream;
+
+--実際に元テーブルに変更を加えてみる
+INSERT INTO sales_raw_staging values(6,'Mango',1.99,1,2),(7,'Garlic',0.99,1,1);
+
+--ストリームを確認（２つ表示されるはず）
+select * from sales_stream;
+
+-- show parametersでstreamの保持期間を確認する(defult:14日間)
+SHOW PARAMETERIS IN TABLE sales_raw_staging;
+
+ALTER TABLE sales_raw_staging SET MAX_DATA_EXTENSION_TIME_IN_DAYS = 14;
+
