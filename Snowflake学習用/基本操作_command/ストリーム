@@ -121,7 +121,7 @@ SET PRODUCT = 'Pain' WHERE PRODUCT = 'Potato';
 --------------------------------------------------------
 
 ---実践---
--- ストリームのオフセットを試す
+-- ストリームのオフセット（保持期間）を試す
 
 //ストリーム処理
 CREATE OR REPLACE TRANSIENT DATABASE STREAMS_DB_OFFSET;
@@ -195,4 +195,33 @@ select * from sales_stream;
 SHOW PARAMETERIS IN TABLE sales_raw_staging;
 
 ALTER TABLE sales_raw_staging SET MAX_DATA_EXTENSION_TIME_IN_DAYS = 14;
+
+--------------------------------------------------------
+--------------------------------------------------------
+
+---実践---
+-- 挿入・更新・削除のすべての操作をケースごとに分けて処理
+merge into SALES_FINAL_TABLE F
+USING ( SELECT STRE.*,ST.location,ST.employees
+        FROM SALES_STREAM STRE
+        JOIN STIRE_TABLE ST
+        ON STRE.store_id = ST.store_id
+) S
+ON F.id = S.id
+when matched
+    and S.METADATA$ACTION = 'DELETE'
+    and S.METADATA$ISUPDATE = 'FALSE'
+    then delete
+when matched
+    and S.METADATA$ACTION = 'INSERT'
+    and S.MEATADATA$ISUPDATE = 'TRUE'
+    then update
+    set f.product = s.product,
+        f.price = s.price,
+        f.amount = s.amount,
+        f.store_id =s.store_id
+when not matched
+    and S.MEATADATA$ACTION = 'INSERT'
+    then insert
+    (s.id.s.product,s.price,s.store_id,s.amount,s.employees,);
 
