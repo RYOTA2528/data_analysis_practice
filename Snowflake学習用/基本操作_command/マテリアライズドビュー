@@ -1,0 +1,57 @@
+// マテリアライズドビュー
+マテリアライズドビュー（Materialized View） は、
+実行結果を物理的に保持するビューです。
+通常のビュー（通常ビュー / 標準ビュー）は毎回クエリ実行時に基のテーブルからデータを取得しますが、マテリアライズドビューは事前にデータを保存しているため、特定の用途では高速です。
+
+制約（制限あり）
+Snowflake のマテリアライズドビューは通常ビューに比べて いくつかの制約 があります：
+
+制約	内容
+集約関数	使用可だが制限あり（SUM, COUNT, MIN, MAX など）
+サブクエリ	サポート対象外（ネストした SELECT 不可）
+JOIN	一部制限あり（シンプルな INNER JOIN のみ）
+関数の使用	一部の関数が使用不可（特に非決定性関数）
+
+ALTER  SESSION SET USE_CACCHED_RESULT = FALSE;
+--キャッシュされた結果が使われなくなる
+--毎回クエリが実行される（再評価される）
+--パフォーマンス低下 & クレジット消費が発生する可能性あり
+
+ALTER warehouse compute_wh suspend;
+ALTER warehouse compute_wh resume;
+
+--準備
+CREATE OR REPLACE TRANSIENR DATABASES ORDERS;
+
+CREATE OR REPLACE TABLE TPCH_SF100.ORDERS AS
+SELECT * FROM SHOWFLAKE_SAMPLE_DATA.TPCH_SF100.ORDERS;
+
+SELECT * FROM ORDERS LIMIT 100;
+
+--上記テーブルの実行結果--
+SELECT
+YEAR(O_ORDERDATE) AS YEAR,
+MAX(O_COMMENT) AS MAX_COMMENT,
+MIN(O_COMMENT) AS MIN_COMMENT,
+MAX(O_CLERK) AS MAX_CLERK,
+MIN(O_CLERK) AS MIN_CLERK,
+FROM ORDERS.TPCH_SF100.ORDERS
+GROUP BY YEAR(O_ORDERDATE)
+ORDER BY YEAR(O_ORDERDATE);
+
+
+-- 上記のクエリをマテリアライズドビューにする
+CREATE OR REPLACE MATERIALIZED VIEW ORDERS_MV
+AS
+SELECT
+YEAR(O_ORDERDATE) AS YEAR,
+MAX(O_COMMENT) AS MAX_COMMENT,
+MIN(O_COMMENT) AS MIN_COMMENT,
+MAX(O_CLERK) AS MAX_CLERK,
+MIN(O_CLERK) AS MIN_CLERK,
+FROM ORDERS.TPCH_SF100.ORDERS
+GROUP BY YEAR(O_ORDERDATE)
+ORDER BY YEAR(O_ORDERDATE);
+
+SHOW MATERIALIZED VIEWS;
+
