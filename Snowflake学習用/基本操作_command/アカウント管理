@@ -31,6 +31,7 @@ GRANT ROLE SYSADMIN TO USER mike;
 
 
 ---実践---
+--SECURITYADMIN
 --先ほど作成したSECURITYADMINのUSERでログイン
 create role sales_admin;
 create role sales_users;
@@ -41,7 +42,24 @@ CREATE USER simon_sales PASSWORD = '123' DEFAULT_ROLE = sales_users
 MUST_CHANGE_PASSWORD = TRUE;
 GRANT ROLE sales_users TO USER simon_sales;
 
+---実践---
+--SYSADMIN
+create warehouse public_wh with
+warehouse_size = 'X-SMALL'
+auto_suspend = 300
+auto_resume = true
 
+grant usage on warehouse public_wh
+to role public
 
+create database common_db;
+grant usage on database common_db to role public
+
+create database sales_database;
+-- データベースの所有権を移行（権限をコピー）
+GRANT OWNERSHIP ON DATABASE sales_database TO ROLE sales_admin COPY CURRENT GRANTS;
+
+-- スキーマの所有権を移行（権限をコピー）
+GRANT OWNERSHIP ON SCHEMA sales_database.public TO ROLE sales_admin COPY CURRENT GRANTS;
 
 
