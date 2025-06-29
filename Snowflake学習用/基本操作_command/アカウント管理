@@ -29,3 +29,19 @@ GRANT ROLE SYSADMIN TO USER mike;
 ユーザー管理	×	〇（ユーザーのロール割当・変更など）
 セキュリティポリシー管理	×	〇（限定的に）
 
+
+---実践---
+--先ほど作成したSECURITYADMINのUSERでログイン
+create role sales_admin;
+create role sales_users;
+
+grant role sales_admin to role SYSADMIN;
+
+CREATE USER simon_sales PASSWORD = '123' DEFAULT_ROLE = sales_users
+MUST_CHANGE_PASSWORD = TRUE;
+GRANT ROLE sales_users TO USER simon_sales;
+
+
+
+
+
